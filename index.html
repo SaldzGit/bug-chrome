@@ -1,68 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Chrome Security Research - FARISSAL B</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome Security Lab - FARISSAL B</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        #target-input { width: 300px; padding: 10px; font-size: 16px; }
-        #log { background: #000; color: #0f0; padding: 15px; margin-top: 20px; border-radius: 5px; height: 200px; overflow-y: auto; }
-        .success { color: #f00; font-weight: bold; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #eee; padding: 40px; }
+        .container { max-width: 800px; margin: auto; background: #2d2d2d; padding: 25px; border-radius: 12px; border: 1px solid #444; }
+        input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 8px; border: 1px solid #555; background: #3d3d3d; color: #fff; font-size: 18px; }
+        input:focus { border-color: #007bff; outline: none; }
+        #log { background: #000; color: #33ff33; padding: 15px; border-radius: 6px; height: 350px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 13px; border: 1px solid #00ff0033; }
+        .leak { color: #ff3333; font-weight: bold; background: #330000; padding: 2px 4px; border-radius: 3px; }
+        .header { border-bottom: 2px solid #444; margin-bottom: 20px; padding-bottom: 10px; }
+        .status-ok { color: #00ff00; }
     </style>
 </head>
 <body>
-    <h2>Chrome Autofill / Shadow-DOM Observer</h2>
-    <p>Step: Klik input di bawah, arahkan kursor (hover) ke saran alamat/email yang muncul.</p>
-    
-    <input id="target-input" type="text" placeholder="Masukkan Alamat..." autocomplete="street-address">
 
-    <div id="log">--- System Logs ---</div>
+<div class="container">
+    <div class="header">
+        <h2>Advanced Chrome Autofill/Shadow-DOM Scanner</h2>
+        <p>Target: <b>User-Agent Shadow Root Data Leak</b></p>
+    </div>
 
-    <script>
-        const logBox = document.getElementById('log');
-        const inp = document.getElementById('target-input');
+    <label>Klik & Hover Saran Alamat/Email:</label>
+    <input id="target" type="text" placeholder="Klik untuk Trigger Autofill..." autocomplete="street-address">
 
-        function logger(msg, isSuccess = false) {
-            const span = document.createElement('div');
-            if(isSuccess) span.className = 'success';
-            span.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-            logBox.appendChild(span);
-        }
+    <div id="log">>> Initialize Research Environment...<br></div>
+</div>
 
-        // Teknik 1: Mencoba mengakses Pseudo-Element via KeyframeEffect (Seperti Bug Brendan)
-        try {
-            let effect = new KeyframeEffect(inp, [
-                { opacity: 0 }, { opacity: 1 }
-            ], { duration: 1000, pseudoElement: "::placeholder" });
-            
-            // Mencoba cloning untuk memecah isolasi target
-            let clonedEffect = new KeyframeEffect(effect);
-            
-            if (clonedEffect.target !== inp) {
-                logger("POTENTIAL LEAK: Cloned target is different from input!", true);
-                logger("Target: " + clonedEffect.target);
-            } else {
-                logger("KeyframeEffect isolated correctly.");
-            }
-        } catch (e) {
-            logger("Error in KeyframeEffect: " + e.message);
-        }
+<script>
+    const logBox = document.getElementById('log');
+    const targetInput = document.getElementById('target');
 
-        // Teknik 2: Monitoring perubahan pada Shadow Root via Animation Events
-        inp.addEventListener('animationstart', (e) => {
-            logger("Animation detected on: " + e.target.tagName);
-            if (e.target !== inp) {
-                logger("ALERT: Unexpected element animated! Possible Shadow-DOM leak.", true);
-            }
-        });
-
-        // Teknik 3: Memantau "Dirty Check" saat Autofill aktif
-        setInterval(() => {
-            if (inp.matches(':-webkit-autofill')) {
-                logger("Autofill detected! Scanning for leaked data...");
-                // Di sini lo bisa eksperimen ngebaca style yang berubah mendadak
-            }
-        }, 500);
-
-    </script>
-</body>
-</html>
+    function log(msg, isLeak = false) {
+        const div = document.createElement('div');
+        div.style.marginBottom = "5px";
+        const time = new Date().toLocaleTimeString();
+        if
