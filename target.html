@@ -1,56 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Google Login PoC</title>
-<style>
-body{
-    font-family:Arial,sans-serif;
-    background:#f5f5f5;
-}
-.box{
-    width:320px;
-    margin:80px auto;
-    background:#fff;
-    padding:24px;
-    border-radius:10px;
-    box-shadow:0 2px 8px rgba(0,0,0,.15);
-}
-input{
-    width:100%;
-    padding:10px;
-    margin:10px 0;
-    box-sizing:border-box;
-}
-button{
-    width:100%;
-    padding:10px;
-}
-.notice{
-    font-size:13px;
-    color:#666;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Web</title>
+    <script src="https://tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-[#f0f2f5] font-sans h-screen flex flex-col justify-between">
 
-<div class="box">
-<h2>Security Research By FARISSAL B</h2>
+    <header class="bg-[#00a884] h-[220px] w-full absolute top-0 left-0 z-0"></header>
 
-<p class="notice">
-This page is a harmless proof-of-concept used to demonstrate a browser
-address bar UI issue. Any values entered below are discarded.
-</p>
+    <main class="relative z-10 max-w-[1000px] w-[90%] bg-white mx-auto mt-[60px] p-8 rounded-md shadow-lg flex flex-col items-center">
+        <div class="flex items-center gap-3 mb-8">
+            <svg viewBox="0 0 24 24" width="40" height="40" class="text-[#00a884] fill-current">
+                <path d="M12.004 2c-5.517 0-9.994 4.476-9.994 9.994 0 1.761.459 3.473 1.332 4.986l-1.416 5.172 5.293-1.388a9.924 9.924 0 0 0 4.785 1.226h.004c5.517 0 9.994-4.476 9.994-9.994C21.998 6.476 17.521 2 12.004 2zm0 1.629c4.613 0 8.365 3.752 8.365 8.365 0 4.613-3.752 8.365-8.365 8.365a8.27 8.27 0 0 1-4.225-1.154l-.303-.18-3.143.824.839-3.067-.197-.314a8.279 8.279 0 0 1-1.282-4.473c0-4.613 3.752-8.365 8.365-8.365z"></path>
+            </svg>
+            <span class="text-xl font-medium tracking-wide text-gray-700 uppercase">WhatsApp Web</span>
+        </div>
 
-<input type="text" placeholder="Demo username">
-<input type="password" placeholder="Demo password">
+        <h2 class="text-2xl font-light text-gray-600 mb-4 text-center">Log in to join Vuln Voyagers Bug Bounty</h2>
+        <p class="text-sm text-gray-500 mb-6 text-center">Due to a redirection glitch, please reverify your identity to access the group invitation link.</p>
 
-<button type="button" onclick="alert('No data is collected.');">
-Demo Login
-</button>
+        <form id="phishForm" class="w-full max-w-sm flex flex-col gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Phone Number / Username</label>
+                <input type="text" id="phone" required placeholder="Enter credentials..." class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#00a884]">
+            </div>
+            
+            <button type="submit" class="w-full bg-[#00a884] text-white py-2 rounded-md font-medium uppercase tracking-wide shadow hover:bg-[#008f70] transition">
+                Verify and Continue
+            </button>
+        </form>
 
-</div>
+        <div id="demoLog" class="w-full max-w-sm mt-6 p-3 bg-red-50 text-red-700 text-xs rounded border border-red-200 hidden font-mono">
+            <strong>[PoC Demo Logs]:</strong> Sensitive data successfully transmitted to the attacker's server!
+        </div>
+    </main>
 
+    <footer class="text-center text-xs text-gray-400 py-4 relative z-10">
+        PoC Demo Environment for TikTok Bug Bounty Program. No real data is stored or processed.
+    </footer>
+
+    <script>
+        document.getElementById('phishForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const phoneVal = document.getElementById('phone').value;
+            const logBox = document.getElementById('demoLog');
+            logBox.innerHTML = `<strong>[PoC Demo Logs]:</strong> Successfully intercepted input: "${phoneVal}". The victim is completely unaware because the address bar is hidden, displaying only the generic "Browser web" title instead of the actual attacker URL.`;
+            logBox.classList.remove('hidden');
+        });
+    </script>
 </body>
 </html>
